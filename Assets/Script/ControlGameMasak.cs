@@ -17,7 +17,7 @@ public class ControlGameMasak : MonoBehaviour
         animatorButton.Play("ButtonPressed", 0, 0f);
     }
 
-    // FUNCTION UMUM
+    // TAMBAH MAKANAN
     public void TambahMakanan(GameObject makanan)
     {
         if (!makanan.activeInHierarchy)
@@ -25,5 +25,19 @@ public class ControlGameMasak : MonoBehaviour
             makanan.SetActive(true);
             ButtonAnimation(piringMakanan);
         }
+    }
+
+    // BUTTON SAMPAH (RESET PIRING)
+    public void HapusSemuaMakanan()
+    {
+        nasi.SetActive(false);
+        ikan.SetActive(false);
+        ayam.SetActive(false);
+        tempe.SetActive(false);
+        sayur.SetActive(false);
+        serundeng.SetActive(false);
+        sambal.SetActive(false);
+
+        ButtonAnimation(piringMakanan);
     }
 }
