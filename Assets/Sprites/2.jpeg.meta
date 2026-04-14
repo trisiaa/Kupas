@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 5787833fe9d01b04b8e870e0943d3b21
+guid: acd5fc862b61a794781543384ec67e32
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 2612501983321980580
-    second: SIARUPA STORE (4)_0
+      213: 6937817954938267909
+    second: 2_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: SIARUPA STORE (4)_0
+      name: 2_0
       rect:
         serializedVersion: 2
-        x: 26
-        y: 61
-        width: 415
-        height: 387
+        x: 0
+        y: 0
+        width: 256
+        height: 456
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 4aef8e256b8714420800000000000000
-      internalID: 2612501983321980580
+      spriteID: 5092c600ca4184060800000000000000
+      internalID: 6937817954938267909
       vertices: []
       indices: 
       edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      SIARUPA STORE (4)_0: 2612501983321980580
+      2_0: 6937817954938267909
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
