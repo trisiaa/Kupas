@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class ControlGameMasak : MonoBehaviour
 {
@@ -13,37 +14,43 @@ public class ControlGameMasak : MonoBehaviour
     public GameObject serundeng;
     public GameObject sambal;
 
-    // SISTEM PEMBELI
+    // =========================
+    // PEMBELI SYSTEM
+    // =========================
 
     [Header("PEMBELI")]
+    public RectTransform[] titikResponPembeli;
+    public RectTransform[] titikStopPembeli;
+
+    public GameObject prefabPembeli;
     public Transform parentPembeli;
 
-    public RectTransform[] titikResponPembeli; 
-    public RectTransform[] titikPembeli;       
-
-    public GameObject[] npcPrefabs;
+    public Sprite[] spritePembelis;
 
     public int totalPembeli = 5;
     private int jumlahSpawn = 0;
 
-    private bool[] titikTerisi;
-
-    private List<GameObject> npcAktif = new List<GameObject>();
-    private List<int> slotNPC = new List<int>();
-
-    public float speed = 500f;
+    public float speedPembeli = 600f;
     public float delaySpawn = 2f;
     private float timer;
 
+    private bool[] titikTerisi;
+
+    private List<GameObject> npcAktif = new List<GameObject>();
+    private List<int> jalurNPC = new List<int>();
+    private List<bool> sudahSampai = new List<bool>(); 
+
+    // =========================
+
     void Start()
     {
-        titikTerisi = new bool[titikPembeli.Length];
+        titikTerisi = new bool[titikStopPembeli.Length];
     }
 
     void Update()
     {
         SpawnPembeli();
-        MoveNPC();
+        MovePembeli();
     }
 
     // =========================
@@ -54,26 +61,42 @@ public class ControlGameMasak : MonoBehaviour
         timer += Time.deltaTime;
         if (timer < delaySpawn) return;
 
-        // pilih jalur (0 atau 1)
         int jalur = Random.Range(0, titikResponPembeli.Length);
 
-        // ❗ kalau jalur itu sudah terisi → jangan spawn
-        if (titikTerisi[jalur])
-            return;
+        if (titikTerisi[jalur]) return;
 
         timer = 0f;
 
-        int randomNPC = Random.Range(0, npcPrefabs.Length);
-
-        GameObject npc = Instantiate(npcPrefabs[randomNPC], parentPembeli);
+        GameObject npc = Instantiate(prefabPembeli, parentPembeli);
 
         RectTransform rect = npc.GetComponent<RectTransform>();
-
-        // spawn sesuai jalur
         rect.anchoredPosition = titikResponPembeli[jalur].anchoredPosition;
 
+        // RANDOM SPRITE
+        Image img = npc.GetComponent<Image>();
+        if (img != null && spritePembelis.Length > 0)
+        {
+            int randomSprite = Random.Range(0, spritePembelis.Length);
+            img.sprite = spritePembelis[randomSprite];
+        }
+
+        // ANIMASI JALAN
+        Animator anim = npc.GetComponent<Animator>();
+        if (anim != null)
+        {
+            anim.SetBool("isJalan", true);
+        }
+
+        // MATIKAN MENU SAAT AWAL
+        Transform menu = npc.transform.Find("Menu");
+        if (menu != null)
+        {
+            menu.gameObject.SetActive(false);
+        }
+
         npcAktif.Add(npc);
-        slotNPC.Add(jalur);
+        jalurNPC.Add(jalur);
+        sudahSampai.Add(false);
 
         titikTerisi[jalur] = true;
 
@@ -81,33 +104,61 @@ public class ControlGameMasak : MonoBehaviour
     }
 
     // =========================
-    void MoveNPC()
+    void MovePembeli()
     {
         for (int i = 0; i < npcAktif.Count; i++)
         {
             if (npcAktif[i] == null) continue;
 
             RectTransform npc = npcAktif[i].GetComponent<RectTransform>();
-            RectTransform target = titikPembeli[slotNPC[i]];
+            RectTransform target = titikStopPembeli[jalurNPC[i]];
 
             npc.anchoredPosition = Vector2.MoveTowards(
                 npc.anchoredPosition,
                 target.anchoredPosition,
-                speed * Time.deltaTime
+                speedPembeli * Time.deltaTime
             );
+
+            // =========================
+            // SAAT SAMPAI
+            // =========================
+            if (!sudahSampai[i] &&
+                Vector2.Distance(npc.anchoredPosition, target.anchoredPosition) < 1f)
+            {
+                sudahSampai[i] = true;
+
+                // STOP ANIMASI
+                Animator anim = npcAktif[i].GetComponent<Animator>();
+                if (anim != null)
+                {
+                    anim.SetBool("isJalan", false);
+                }
+
+                // AKTIFKAN MENU
+                Transform menu = npcAktif[i].transform.Find("Menu");
+                if (menu != null)
+                {
+                    menu.gameObject.SetActive(true);
+                }
+            }
         }
     }
 
-    // KOSONGKAN SLOT (NANTI DIPAKAI)
+    // =========================
     public void PembeliSelesai(int index)
     {
-        titikTerisi[slotNPC[index]] = false;
+        titikTerisi[jalurNPC[index]] = false;
 
         Destroy(npcAktif[index]);
 
         npcAktif.RemoveAt(index);
-        slotNPC.RemoveAt(index);
+        jalurNPC.RemoveAt(index);
+        sudahSampai.RemoveAt(index);
     }
+
+    // =========================
+    // FUNGSI LAMA (TIDAK DIUBAH)
+    // =========================
 
     public void ButtonAnimation(Animator animatorButton)
     {

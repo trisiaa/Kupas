@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 0f9a41ab3af20fa45851d114010d189f
+guid: 4185f6a608cce7948908f7e07e9389df
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 6752496935281938420
-    second: Gambaran gameplay main_0
+      213: -7919638967399771323
+    second: Background_gameplay_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,7 +113,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Gambaran gameplay main_0
+      name: Background_gameplay_0
       rect:
         serializedVersion: 2
         x: 0
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 4ffc466bf20b5bd50800000000000000
-      internalID: 6752496935281938420
+      spriteID: 5439bc6b15ac71290800000000000000
+      internalID: -7919638967399771323
       vertices: []
       indices: 
       edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Gambaran gameplay main_0: 6752496935281938420
+      Background_gameplay_0: -7919638967399771323
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
