@@ -14,10 +14,6 @@ public class ControlGameMasak : MonoBehaviour
     public GameObject serundeng;
     public GameObject sambal;
 
-    // =========================
-    // PEMBELI SYSTEM
-    // =========================
-
     [Header("PEMBELI")]
     public RectTransform[] titikResponPembeli;
     public RectTransform[] titikStopPembeli;
@@ -38,9 +34,14 @@ public class ControlGameMasak : MonoBehaviour
 
     private List<GameObject> npcAktif = new List<GameObject>();
     private List<int> jalurNPC = new List<int>();
-    private List<bool> sudahSampai = new List<bool>(); 
+    private List<bool> sudahSampai = new List<bool>();
+    private List<bool> sudahPergi = new List<bool>();
 
-    // =========================
+    [Header("Pesan Makanan")]
+    public List<string> pesanMakanan = new List<string>();
+
+    [Header("MEJA PLAYER")]
+    public Transform makanan;
 
     void Start()
     {
@@ -72,22 +73,18 @@ public class ControlGameMasak : MonoBehaviour
         RectTransform rect = npc.GetComponent<RectTransform>();
         rect.anchoredPosition = titikResponPembeli[jalur].anchoredPosition;
 
-        // RANDOM SPRITE
         Image img = npc.GetComponent<Image>();
         if (img != null && spritePembelis.Length > 0)
         {
-            int randomSprite = Random.Range(0, spritePembelis.Length);
-            img.sprite = spritePembelis[randomSprite];
+            img.sprite = spritePembelis[Random.Range(0, spritePembelis.Length)];
         }
 
-        // ANIMASI JALAN
         Animator anim = npc.GetComponent<Animator>();
         if (anim != null)
         {
             anim.SetBool("isJalan", true);
         }
 
-        // MATIKAN MENU SAAT AWAL
         Transform menu = npc.transform.Find("Menu");
         if (menu != null)
         {
@@ -97,6 +94,7 @@ public class ControlGameMasak : MonoBehaviour
         npcAktif.Add(npc);
         jalurNPC.Add(jalur);
         sudahSampai.Add(false);
+        sudahPergi.Add(false);
 
         titikTerisi[jalur] = true;
 
@@ -111,42 +109,164 @@ public class ControlGameMasak : MonoBehaviour
             if (npcAktif[i] == null) continue;
 
             RectTransform npc = npcAktif[i].GetComponent<RectTransform>();
-            RectTransform target = titikStopPembeli[jalurNPC[i]];
 
-            npc.anchoredPosition = Vector2.MoveTowards(
-                npc.anchoredPosition,
-                target.anchoredPosition,
-                speedPembeli * Time.deltaTime
-            );
-
-            // =========================
-            // SAAT SAMPAI
-            // =========================
-            if (!sudahSampai[i] &&
-                Vector2.Distance(npc.anchoredPosition, target.anchoredPosition) < 1f)
+            if (!sudahPergi[i])
             {
-                sudahSampai[i] = true;
+                RectTransform target = titikStopPembeli[jalurNPC[i]];
 
-                // STOP ANIMASI
-                Animator anim = npcAktif[i].GetComponent<Animator>();
-                if (anim != null)
+                npc.anchoredPosition = Vector2.MoveTowards(
+                    npc.anchoredPosition,
+                    target.anchoredPosition,
+                    speedPembeli * Time.deltaTime
+                );
+
+                if (!sudahSampai[i] &&
+                    Vector2.Distance(npc.anchoredPosition, target.anchoredPosition) < 1f)
                 {
-                    anim.SetBool("isJalan", false);
+                    sudahSampai[i] = true;
+
+                    npc.GetComponent<Animator>().SetBool("isJalan", false);
+
+                    Transform menu = npc.transform.Find("Menu");
+                    if (menu != null)
+                    {
+                        menu.gameObject.SetActive(true);
+
+                        string pesanan = RandomMenu(menu);
+
+                        if (i < pesanMakanan.Count)
+                            pesanMakanan[i] = pesanan;
+                        else
+                            pesanMakanan.Add(pesanan);
+                    }
                 }
+            }
+            else
+            {
+                RectTransform target = titikResponPembeli[jalurNPC[i]];
 
-                // AKTIFKAN MENU
-                Transform menu = npcAktif[i].transform.Find("Menu");
-                if (menu != null)
+                npc.anchoredPosition = Vector2.MoveTowards(
+                    npc.anchoredPosition,
+                    target.anchoredPosition,
+                    speedPembeli * Time.deltaTime
+                );
+
+                if (Vector2.Distance(npc.anchoredPosition, target.anchoredPosition) < 1f)
                 {
-                    menu.gameObject.SetActive(true);
+                    PembeliSelesai(i);
+                    break;
                 }
             }
         }
     }
 
     // =========================
+    string RandomMenu(Transform menu)
+    {
+        List<string> hasil = new List<string>();
+
+        Transform makanan = menu.Find("makanan");
+
+        foreach (Transform item in makanan)
+            item.gameObject.SetActive(false);
+
+        makanan.Find("piring").gameObject.SetActive(true);
+        makanan.Find("nasi").gameObject.SetActive(true);
+        makanan.Find("ikan").gameObject.SetActive(true);
+
+        hasil.Add("piring");
+        hasil.Add("nasi");
+        hasil.Add("ikan");
+
+        string[] lauk = { "tempe", "ayam", "sayur", "sambal", "serundeng" };
+
+        int jumlah = Random.Range(1, 3);
+
+        for (int i = 0; i < jumlah; i++)
+        {
+            int r = Random.Range(0, lauk.Length);
+            makanan.Find(lauk[r]).gameObject.SetActive(true);
+            hasil.Add(lauk[r]);
+        }
+
+        return string.Join(", ", hasil);
+    }
+
+    // =========================
+    bool IsThereSameMakanan(int index)
+    {
+        if (index >= npcAktif.Count) return false;
+
+        Transform menuPembeli = npcAktif[index].transform.Find("Menu/makanan");
+
+        for (int j = 0; j < makanan.childCount; j++)
+        {
+            bool playerActive = makanan.GetChild(j).gameObject.activeSelf;
+            bool npcActive = menuPembeli.GetChild(j).gameObject.activeSelf;
+
+            if (playerActive != npcActive)
+                return false;
+
+            if (playerActive)
+            {
+                Sprite s1 = makanan.GetChild(j).GetComponent<Image>().sprite;
+                Sprite s2 = menuPembeli.GetChild(j).GetComponent<Image>().sprite;
+
+                if (s1 != s2)
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+    // =========================
+    public void ButtonSendMakanan()
+    {
+        for (int i = 0; i < npcAktif.Count; i++)
+        {
+            if (!sudahSampai[i] || sudahPergi[i]) continue;
+
+            if (IsThereSameMakanan(i))
+            {
+                Debug.Log("KIRIM KE PEMBELI: " + i);
+
+                Transform menu = npcAktif[i].transform.Find("Menu");
+                if (menu != null)
+                    menu.gameObject.SetActive(false);
+
+                sudahPergi[i] = true;
+
+                if (i < pesanMakanan.Count)
+                    pesanMakanan.RemoveAt(i);
+
+                // 🔥 TAMBAHAN RESET
+                ResetMakananKeAwal();
+
+                return;
+            }
+        }
+
+        Debug.Log("SALAH PESANAN");
+    }
+
+    // =========================
+    void ResetMakananKeAwal()
+    {
+        // reset semua makanan player
+        HapusSemuaMakanan();
+
+        // animasi biar terasa reset
+        ButtonAnimation(piringMakanan);
+
+        Debug.Log("Makanan di-reset ke awal");
+    }
+
+    // =========================
     public void PembeliSelesai(int index)
     {
+        if (index >= npcAktif.Count) return;
+
         titikTerisi[jalurNPC[index]] = false;
 
         Destroy(npcAktif[index]);
@@ -154,12 +274,13 @@ public class ControlGameMasak : MonoBehaviour
         npcAktif.RemoveAt(index);
         jalurNPC.RemoveAt(index);
         sudahSampai.RemoveAt(index);
+        sudahPergi.RemoveAt(index);
+
+        if (index < pesanMakanan.Count)
+            pesanMakanan.RemoveAt(index);
     }
 
     // =========================
-    // FUNGSI LAMA (TIDAK DIUBAH)
-    // =========================
-
     public void ButtonAnimation(Animator animatorButton)
     {
         animatorButton.Play("ButtonPressed", 0, 0f);
