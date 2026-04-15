@@ -237,6 +237,12 @@ public class ControlGameMasak : MonoBehaviour
 
                 sudahPergi[i] = true;
 
+                Animator anim = npcAktif[i].GetComponent<Animator>();
+if (anim != null)
+{
+    anim.SetBool("isJalan", true);
+}
+
                 if (i < pesanMakanan.Count)
                     pesanMakanan.RemoveAt(i);
 
