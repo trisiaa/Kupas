@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
 
@@ -43,18 +44,92 @@ public class ControlGameMasak : MonoBehaviour
     [Header("MEJA PLAYER")]
     public Transform makanan;
 
+    // ================= TAMBAHAN =================
+    [Header("MOVE MAKANAN")]
+    public bool isStartMoveMakanan;
+    public float speedMoveMakanan = 1500f;
+    public RectTransform targetMoveMakanan;
+
+    private RectTransform makananRect;
+    private Vector2 posisiAwal;
+
+    int indexMakananAktif = -1;
+    // ===========================================
+
     void Start()
     {
         titikTerisi = new bool[titikStopPembeli.Length];
+
+        makananRect = makanan.GetComponent<RectTransform>();
+        posisiAwal = makananRect.anchoredPosition;
     }
 
     void Update()
     {
         SpawnPembeli();
         MovePembeli();
+        MoveMakanan();
     }
 
-    // =========================
+    // ================= MOVE MAKANAN =================
+    void MoveMakanan()
+    {
+        if (!isStartMoveMakanan || targetMoveMakanan == null) return;
+
+        Vector3 worldTarget = targetMoveMakanan.position;
+
+        Vector2 targetPos;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            makananRect.parent as RectTransform,
+            RectTransformUtility.WorldToScreenPoint(null, worldTarget),
+            null,
+            out targetPos
+        );
+
+        makananRect.anchoredPosition = Vector2.MoveTowards(
+            makananRect.anchoredPosition,
+            targetPos,
+            speedMoveMakanan * Time.deltaTime
+        );
+
+        if (Vector2.Distance(makananRect.anchoredPosition, targetPos) < 5f)
+        {
+            isStartMoveMakanan = false;
+            makananRect.anchoredPosition = posisiAwal;
+        }
+    }
+
+    IEnumerator TungguMakananSampai()
+    {
+        while (isStartMoveMakanan)
+        {
+            yield return null;
+        }
+
+        if (indexMakananAktif >= 0 && indexMakananAktif < npcAktif.Count)
+        {
+            Transform menu = npcAktif[indexMakananAktif].transform.Find("Menu");
+            if (menu != null)
+                menu.gameObject.SetActive(false);
+
+            ResetMakananKeAwal();
+
+            // delay biar smooth (opsional, bisa hapus kalau gak mau)
+            yield return new WaitForSeconds(0.2f);
+
+            sudahPergi[indexMakananAktif] = true;
+
+            Animator anim = npcAktif[indexMakananAktif].GetComponent<Animator>();
+            if (anim != null)
+            {
+                anim.SetBool("isJalan", true);
+            }
+        }
+
+        indexMakananAktif = -1;
+    }
+    // =================================================
+
     void SpawnPembeli()
     {
         if (jumlahSpawn >= totalPembeli) return;
@@ -101,7 +176,6 @@ public class ControlGameMasak : MonoBehaviour
         jumlahSpawn++;
     }
 
-    // =========================
     void MovePembeli()
     {
         for (int i = 0; i < npcAktif.Count; i++)
@@ -160,7 +234,6 @@ public class ControlGameMasak : MonoBehaviour
         }
     }
 
-    // =========================
     string RandomMenu(Transform menu)
     {
         List<string> hasil = new List<string>();
@@ -192,7 +265,6 @@ public class ControlGameMasak : MonoBehaviour
         return string.Join(", ", hasil);
     }
 
-    // =========================
     bool IsThereSameMakanan(int index)
     {
         if (index >= npcAktif.Count) return false;
@@ -220,7 +292,6 @@ public class ControlGameMasak : MonoBehaviour
         return true;
     }
 
-    // =========================
     public void ButtonSendMakanan()
     {
         for (int i = 0; i < npcAktif.Count; i++)
@@ -231,23 +302,21 @@ public class ControlGameMasak : MonoBehaviour
             {
                 Debug.Log("KIRIM KE PEMBELI: " + i);
 
-                Transform menu = npcAktif[i].transform.Find("Menu");
-                if (menu != null)
-                    menu.gameObject.SetActive(false);
+                Transform targetMenu = npcAktif[i].transform.Find("Menu/makanan");
+                if (targetMenu != null)
+                {
+                    targetMoveMakanan = targetMenu.GetComponent<RectTransform>();
+                }
 
-                sudahPergi[i] = true;
+                isStartMoveMakanan = true;
 
-                Animator anim = npcAktif[i].GetComponent<Animator>();
-if (anim != null)
-{
-    anim.SetBool("isJalan", true);
-}
+                indexMakananAktif = i;
+                StartCoroutine(TungguMakananSampai());
 
                 if (i < pesanMakanan.Count)
                     pesanMakanan.RemoveAt(i);
 
-                // 🔥 TAMBAHAN RESET
-                ResetMakananKeAwal();
+                
 
                 return;
             }
@@ -256,19 +325,13 @@ if (anim != null)
         Debug.Log("SALAH PESANAN");
     }
 
-    // =========================
     void ResetMakananKeAwal()
     {
-        // reset semua makanan player
         HapusSemuaMakanan();
-
-        // animasi biar terasa reset
         ButtonAnimation(piringMakanan);
-
         Debug.Log("Makanan di-reset ke awal");
     }
 
-    // =========================
     public void PembeliSelesai(int index)
     {
         if (index >= npcAktif.Count) return;
@@ -286,7 +349,6 @@ if (anim != null)
             pesanMakanan.RemoveAt(index);
     }
 
-    // =========================
     public void ButtonAnimation(Animator animatorButton)
     {
         animatorButton.Play("ButtonPressed", 0, 0f);
