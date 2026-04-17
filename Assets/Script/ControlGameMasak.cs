@@ -44,6 +44,17 @@ public class ControlGameMasak : MonoBehaviour
     [Header("MEJA PLAYER")]
     public Transform makanan;
 
+    // ================= TIMER SLOT SYSTEM =================
+    [Header("TIMER PEMBELI (ANTI BUG)")]
+    public float maxTime = 10f;
+
+    public bool[] isTimerActive = new bool[2];
+    public float[] currentTime = new float[2];
+    public Slider[] sliderTimer = new Slider[2];
+
+    private GameObject[] npcSlot = new GameObject[2];
+    // =====================================================
+
     // ================= TAMBAHAN =================
     [Header("MOVE MAKANAN")]
     public bool isStartMoveMakanan;
@@ -62,6 +73,12 @@ public class ControlGameMasak : MonoBehaviour
 
         makananRect = makanan.GetComponent<RectTransform>();
         posisiAwal = makananRect.anchoredPosition;
+
+        for (int i = 0; i < 2; i++)
+        {
+            currentTime[i] = maxTime;
+            isTimerActive[i] = false;
+        }
     }
 
     void Update()
@@ -69,7 +86,47 @@ public class ControlGameMasak : MonoBehaviour
         SpawnPembeli();
         MovePembeli();
         MoveMakanan();
+        UpdateTimerSlot();
     }
+
+    // ================= TIMER SLOT =================
+    void UpdateTimerSlot()
+    {
+        for (int i = 0; i < 2; i++)
+        {
+            if (!isTimerActive[i]) continue;
+            if (npcSlot[i] == null) continue;
+
+            currentTime[i] -= Time.deltaTime;
+
+            if (sliderTimer[i] != null)
+            {
+                sliderTimer[i].value = currentTime[i];
+            }
+
+            if (currentTime[i] <= 0)
+{
+    Debug.Log("Slot " + i + " kabur!");
+
+    isTimerActive[i] = false;
+    currentTime[i] = 0;
+
+    int index = npcAktif.IndexOf(npcSlot[i]);
+    if (index != -1)
+    {
+        sudahPergi[index] = true;
+
+        // 🔥 TAMBAHAN INI
+        Animator anim = npcAktif[index].GetComponent<Animator>();
+        if (anim != null)
+        {
+            anim.SetBool("isJalan", true);
+        }
+    }
+}
+        }
+    }
+    // =============================================
 
     // ================= MOVE MAKANAN =================
     void MoveMakanan()
@@ -114,10 +171,16 @@ public class ControlGameMasak : MonoBehaviour
 
             ResetMakananKeAwal();
 
-            // delay biar smooth (opsional, bisa hapus kalau gak mau)
             yield return new WaitForSeconds(0.2f);
 
             sudahPergi[indexMakananAktif] = true;
+
+            // STOP TIMER SLOT
+            int slot = jalurNPC[indexMakananAktif];
+            if (slot < 2)
+            {
+                isTimerActive[slot] = false;
+            }
 
             Animator anim = npcAktif[indexMakananAktif].GetComponent<Animator>();
             if (anim != null)
@@ -172,8 +235,13 @@ public class ControlGameMasak : MonoBehaviour
         sudahPergi.Add(false);
 
         titikTerisi[jalur] = true;
-
         jumlahSpawn++;
+
+        // 🔥 MASUK SLOT SESUAI JALUR
+        if (jalur < 2)
+        {
+            npcSlot[jalur] = npc;
+        }
     }
 
     void MovePembeli()
@@ -212,6 +280,24 @@ public class ControlGameMasak : MonoBehaviour
                             pesanMakanan[i] = pesanan;
                         else
                             pesanMakanan.Add(pesanan);
+
+                        // 🔥 START TIMER SLOT
+                        int slot = jalurNPC[i];
+
+                        if (slot < 2)
+                        {
+                            isTimerActive[slot] = true;
+                            currentTime[slot] = maxTime;
+
+                            Slider s = menu.GetComponentInChildren<Slider>();
+                            sliderTimer[slot] = s;
+
+                            if (s != null)
+                            {
+                                s.maxValue = maxTime;
+                                s.value = maxTime;
+                            }
+                        }
                     }
                 }
             }
@@ -316,8 +402,6 @@ public class ControlGameMasak : MonoBehaviour
                 if (i < pesanMakanan.Count)
                     pesanMakanan.RemoveAt(i);
 
-                
-
                 return;
             }
         }
@@ -336,7 +420,9 @@ public class ControlGameMasak : MonoBehaviour
     {
         if (index >= npcAktif.Count) return;
 
-        titikTerisi[jalurNPC[index]] = false;
+        int slot = jalurNPC[index];
+
+        titikTerisi[slot] = false;
 
         Destroy(npcAktif[index]);
 
@@ -344,6 +430,15 @@ public class ControlGameMasak : MonoBehaviour
         jalurNPC.RemoveAt(index);
         sudahSampai.RemoveAt(index);
         sudahPergi.RemoveAt(index);
+
+        // 🔥 CLEAR SLOT
+        if (slot < 2)
+        {
+            isTimerActive[slot] = false;
+            currentTime[slot] = maxTime;
+            sliderTimer[slot] = null;
+            npcSlot[slot] = null;
+        }
 
         if (index < pesanMakanan.Count)
             pesanMakanan.RemoveAt(index);
