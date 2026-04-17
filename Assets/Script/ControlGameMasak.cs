@@ -102,6 +102,16 @@ public class ControlGameMasak : MonoBehaviour
             if (sliderTimer[i] != null)
             {
                 sliderTimer[i].value = currentTime[i];
+
+                // UBAH WARNA SAAT SETENGAH WAKTU
+if (currentTime[i] <= maxTime * 0.5f)
+{
+    Image fill = sliderTimer[i].fillRect.GetComponent<Image>();
+    if (fill != null)
+    {
+        fill.color = Color.red;
+    }
+}
             }
 
             if (currentTime[i] <= 0)
@@ -116,7 +126,14 @@ public class ControlGameMasak : MonoBehaviour
     {
         sudahPergi[index] = true;
 
-        // 🔥 TAMBAHAN INI
+        // 🔥 MATIKAN MENU (POPUP)
+        Transform menu = npcAktif[index].transform.Find("Menu");
+        if (menu != null)
+        {
+            menu.gameObject.SetActive(false);
+        }
+
+        // 🔥 ANIMASI JALAN (SAMA SEPERTI SELESAI)
         Animator anim = npcAktif[index].GetComponent<Animator>();
         if (anim != null)
         {
