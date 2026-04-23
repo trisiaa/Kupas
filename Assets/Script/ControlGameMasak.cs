@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using TMPro;
 
 public class ControlGameMasak : MonoBehaviour
 {
@@ -38,14 +39,30 @@ public class ControlGameMasak : MonoBehaviour
     private List<bool> sudahSampai = new List<bool>();
     private List<bool> sudahPergi = new List<bool>();
 
+    private List<bool> pembeliKabur = new List<bool>();
+
     [Header("Pesan Makanan")]
     public List<string> pesanMakanan = new List<string>();
 
     [Header("MEJA PLAYER")]
     public Transform makanan;
 
+    [Header("GAME OVER")]
+    public GameObject panelGameOver; 
+    private bool isGameOver = false; 
+    
+    [Header("DEBUG PEMBELI")]
+    [SerializeField] private int countSisaPembeli;
+    private int jumlahDilayani = 0;
+
+    [Header("UI SISA PEMBELI")]
+    public TextMeshProUGUI textTotalPembeli; 
+
+    [Header("UI CLOSE")]
+    public GameObject tombolClose;
+
     // ================= TIMER SLOT SYSTEM =================
-    [Header("TIMER PEMBELI (ANTI BUG)")]
+    [Header("TIMER PEMBELI")]
     public float maxTime = 10f;
 
     public bool[] isTimerActive = new bool[2];
@@ -53,9 +70,9 @@ public class ControlGameMasak : MonoBehaviour
     public Slider[] sliderTimer = new Slider[2];
 
     private GameObject[] npcSlot = new GameObject[2];
+
     // =====================================================
 
-    // ================= TAMBAHAN =================
     [Header("MOVE MAKANAN")]
     public bool isStartMoveMakanan;
     public float speedMoveMakanan = 1500f;
@@ -65,6 +82,7 @@ public class ControlGameMasak : MonoBehaviour
     private Vector2 posisiAwal;
 
     int indexMakananAktif = -1;
+
     // ===========================================
 
     void Start()
@@ -79,19 +97,59 @@ public class ControlGameMasak : MonoBehaviour
             currentTime[i] = maxTime;
             isTimerActive[i] = false;
         }
+        if (panelGameOver != null)
+            panelGameOver.SetActive(false); 
     }
 
     void Update()
     {
+        if (isGameOver) return; 
+
         SpawnPembeli();
         MovePembeli();
         MoveMakanan();
         UpdateTimerSlot();
+        UpdateSisaPembeli();
     }
+
+    void TriggerGameOver() // 
+    {
+        if (isGameOver) return;
+
+        isGameOver = true;
+
+        Debug.Log("GAME OVER!");
+
+        if (panelGameOver != null)
+            panelGameOver.SetActive(true);
+
+        Time.timeScale = 0f;
+    }
+
+    void UpdateSisaPembeli()
+{
+    countSisaPembeli = totalPembeli - jumlahSpawn;
+
+    if (countSisaPembeli < 0)
+        countSisaPembeli = 0;
+
+    // UPDATE TEXT
+    if (textTotalPembeli != null)
+    {
+        textTotalPembeli.text = countSisaPembeli.ToString();
+    }
+
+    // AKTIFKAN CLOSE JIKA 0
+    if (tombolClose != null)
+    {
+        tombolClose.SetActive(countSisaPembeli == 0);
+    }
+}
 
     // ================= TIMER SLOT =================
     void UpdateTimerSlot()
     {
+
         for (int i = 0; i < 2; i++)
         {
             if (!isTimerActive[i]) continue;
@@ -125,15 +183,16 @@ if (currentTime[i] <= maxTime * 0.5f)
     if (index != -1)
     {
         sudahPergi[index] = true;
+        pembeliKabur[index] = true; 
 
-        // 🔥 MATIKAN MENU (POPUP)
+        // MATIKAN MENU (POPUP)
         Transform menu = npcAktif[index].transform.Find("Menu");
         if (menu != null)
         {
             menu.gameObject.SetActive(false);
         }
 
-        // 🔥 ANIMASI JALAN (SAMA SEPERTI SELESAI)
+        // ANIMASI JALAN (SAMA SEPERTI SELESAI)
         Animator anim = npcAktif[index].GetComponent<Animator>();
         if (anim != null)
         {
@@ -191,6 +250,7 @@ if (currentTime[i] <= maxTime * 0.5f)
             yield return new WaitForSeconds(0.2f);
 
             sudahPergi[indexMakananAktif] = true;
+            jumlahDilayani++;
 
             // STOP TIMER SLOT
             int slot = jalurNPC[indexMakananAktif];
@@ -207,6 +267,7 @@ if (currentTime[i] <= maxTime * 0.5f)
         }
 
         indexMakananAktif = -1;
+
     }
     // =================================================
 
@@ -250,11 +311,12 @@ if (currentTime[i] <= maxTime * 0.5f)
         jalurNPC.Add(jalur);
         sudahSampai.Add(false);
         sudahPergi.Add(false);
+        pembeliKabur.Add(false); 
 
         titikTerisi[jalur] = true;
         jumlahSpawn++;
 
-        // 🔥 MASUK SLOT SESUAI JALUR
+        // MASUK SLOT SESUAI JALUR
         if (jalur < 2)
         {
             npcSlot[jalur] = npc;
@@ -298,7 +360,7 @@ if (currentTime[i] <= maxTime * 0.5f)
                         else
                             pesanMakanan.Add(pesanan);
 
-                        // 🔥 START TIMER SLOT
+                        // START TIMER SLOT
                         int slot = jalurNPC[i];
 
                         if (slot < 2)
@@ -330,6 +392,11 @@ if (currentTime[i] <= maxTime * 0.5f)
 
                 if (Vector2.Distance(npc.anchoredPosition, target.anchoredPosition) < 1f)
                 {
+                    if (pembeliKabur[i]) // GAME OVER
+                    {
+                        TriggerGameOver();
+                    }
+
                     PembeliSelesai(i);
                     break;
                 }
@@ -413,6 +480,13 @@ if (currentTime[i] <= maxTime * 0.5f)
 
                 isStartMoveMakanan = true;
 
+                int slot = jalurNPC[i];
+
+if (slot < 2)
+{
+    isTimerActive[slot] = false; // PAUSE HANYA SLOT INI
+}
+
                 indexMakananAktif = i;
                 StartCoroutine(TungguMakananSampai());
 
@@ -447,8 +521,9 @@ if (currentTime[i] <= maxTime * 0.5f)
         jalurNPC.RemoveAt(index);
         sudahSampai.RemoveAt(index);
         sudahPergi.RemoveAt(index);
+        pembeliKabur.RemoveAt(index);
 
-        // 🔥 CLEAR SLOT
+        // CLEAR SLOT
         if (slot < 2)
         {
             isTimerActive[slot] = false;
