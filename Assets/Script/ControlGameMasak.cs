@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class ControlGameMasak : MonoBehaviour
 {
@@ -61,6 +62,21 @@ public class ControlGameMasak : MonoBehaviour
     [Header("UI CLOSE")]
     public GameObject tombolClose;
 
+    [Header("UI PAUSE")]
+    public GameObject panelPause;
+
+    [Header("LEVEL SYSTEM")]
+    public int level = 1;
+
+    [Header("BUTTON MAKANAN")]
+    public GameObject buttonNasi;
+    public GameObject buttonIkan;
+    public GameObject buttonSerundeng;
+    public GameObject buttonSambal;
+    public GameObject buttonTempe;
+    public GameObject buttonSayur;
+    public GameObject buttonAyam;
+
     // ================= TIMER SLOT SYSTEM =================
     [Header("TIMER PEMBELI")]
     public float maxTime = 10f;
@@ -87,6 +103,7 @@ public class ControlGameMasak : MonoBehaviour
 
     void Start()
     {
+        UpdateButtonByLevel();
         titikTerisi = new bool[titikStopPembeli.Length];
 
         makananRect = makanan.GetComponent<RectTransform>();
@@ -111,6 +128,64 @@ public class ControlGameMasak : MonoBehaviour
         UpdateTimerSlot();
         UpdateSisaPembeli();
     }
+
+    void CheckLevelUp()
+{
+    if (jumlahDilayani == 3)
+        level = 2;
+    else if (jumlahDilayani == 4)
+        level = 3;
+    else if (jumlahDilayani == 5)
+        level = 4;
+    else if (jumlahDilayani == 6)
+        level = 5;
+
+    UpdateButtonByLevel(); // 🔥 WAJIB
+}
+
+    void UpdateButtonByLevel()
+{
+    // WAJIB AKTIF
+    buttonNasi.SetActive(true);
+    buttonIkan.SetActive(true);
+
+    // LEVEL SYSTEM
+    buttonSerundeng.SetActive(level >= 1);
+    buttonSambal.SetActive(level >= 2);
+    buttonTempe.SetActive(level >= 3);
+    buttonSayur.SetActive(level >= 4);
+    buttonAyam.SetActive(level >= 5);
+}
+
+    void UpdateUnlockMakanan()
+{
+    // WAJIB ADA DARI AWAL
+    nasi.SetActive(true);
+    ikan.SetActive(true);
+
+    // RESET (yang lain dimatiin dulu)
+    ayam.SetActive(false);
+    tempe.SetActive(false);
+    sayur.SetActive(false);
+    serundeng.SetActive(false);
+    sambal.SetActive(false);
+
+    // UNLOCK SESUAI LEVEL
+    if (level >= 1)
+        serundeng.SetActive(true);
+
+    if (level >= 2)
+        sambal.SetActive(true);
+
+    if (level >= 3)
+        tempe.SetActive(true);
+
+    if (level >= 4)
+        sayur.SetActive(true);
+
+    if (level >= 5)
+        ayam.SetActive(true);
+}
 
     void TriggerGameOver() // 
     {
@@ -323,6 +398,7 @@ if (currentTime[i] <= maxTime * 0.5f)
         }
     }
 
+
     void MovePembeli()
     {
         for (int i = 0; i < npcAktif.Count; i++)
@@ -405,35 +481,69 @@ if (currentTime[i] <= maxTime * 0.5f)
     }
 
     string RandomMenu(Transform menu)
+{
+    List<string> hasil = new List<string>();
+
+    Transform makanan = menu.Find("makanan");
+
+    // Reset semua
+    foreach (Transform item in makanan)
+        item.gameObject.SetActive(false);
+
+    // WAJIB ADA (base menu)
+    makanan.Find("piring").gameObject.SetActive(true);
+    makanan.Find("nasi").gameObject.SetActive(true);
+    makanan.Find("ikan").gameObject.SetActive(true);
+
+    hasil.Add("piring");
+    hasil.Add("nasi");
+    hasil.Add("ikan");
+
+    // 🔥 AMBIL LAUK SESUAI LEVEL
+    List<string> lauk = GetLaukByLevel();
+
+    // 🔥 JUMLAH ITEM RANDOM IKUT LEVEL
+    int jumlah = Random.Range(1, Mathf.Min(level + 1, lauk.Count + 1));
+
+    // 🔥 RANDOM TANPA DUPLIKAT
+    for (int i = 0; i < jumlah; i++)
     {
-        List<string> hasil = new List<string>();
+        if (lauk.Count == 0) break;
 
-        Transform makanan = menu.Find("makanan");
+        int r = Random.Range(0, lauk.Count);
 
-        foreach (Transform item in makanan)
-            item.gameObject.SetActive(false);
+        string item = lauk[r];
 
-        makanan.Find("piring").gameObject.SetActive(true);
-        makanan.Find("nasi").gameObject.SetActive(true);
-        makanan.Find("ikan").gameObject.SetActive(true);
+        makanan.Find(item).gameObject.SetActive(true);
+        hasil.Add(item);
 
-        hasil.Add("piring");
-        hasil.Add("nasi");
-        hasil.Add("ikan");
-
-        string[] lauk = { "tempe", "ayam", "sayur", "sambal", "serundeng" };
-
-        int jumlah = Random.Range(1, 3);
-
-        for (int i = 0; i < jumlah; i++)
-        {
-            int r = Random.Range(0, lauk.Length);
-            makanan.Find(lauk[r]).gameObject.SetActive(true);
-            hasil.Add(lauk[r]);
-        }
-
-        return string.Join(", ", hasil);
+        lauk.RemoveAt(r); // supaya tidak dobel
     }
+
+    return string.Join(", ", hasil);
+}
+
+    List<string> GetLaukByLevel()
+{
+    List<string> laukAktif = new List<string>();
+
+    if (level >= 1)
+        laukAktif.Add("serundeng");
+
+    if (level >= 2)
+        laukAktif.Add("sambal");
+
+    if (level >= 3)
+        laukAktif.Add("tempe");
+
+    if (level >= 4)
+        laukAktif.Add("sayur");
+
+    if (level >= 5)
+        laukAktif.Add("ayam");
+
+    return laukAktif;
+}
 
     bool IsThereSameMakanan(int index)
     {
@@ -461,6 +571,34 @@ if (currentTime[i] <= maxTime * 0.5f)
 
         return true;
     }
+
+    public void ButtonPause()
+{
+    Time.timeScale = 0f; 
+
+    if (panelPause != null)
+    {
+        panelPause.SetActive(true); 
+    }
+}
+
+    public void ButtonLanjut()
+{
+    Time.timeScale = 1f; 
+
+    if (panelPause != null)
+    {
+        panelPause.SetActive(false); 
+    }
+}
+
+    public void ButtonMainMenu()
+{
+    Time.timeScale = 1f; 
+
+    SceneManager.LoadScene(0); 
+}
+
 
     public void ButtonSendMakanan()
     {
