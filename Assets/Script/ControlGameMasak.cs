@@ -5,6 +5,13 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
 
+[System.Serializable]
+public class LevelData
+{
+    public int level;
+    public int totalPembeli;
+}
+
 public class ControlGameMasak : MonoBehaviour
 {
     public Animator piringMakanan;
@@ -26,7 +33,6 @@ public class ControlGameMasak : MonoBehaviour
 
     public Sprite[] spritePembelis;
 
-    public int totalPembeli = 5;
     private int jumlahSpawn = 0;
 
     public float speedPembeli = 600f;
@@ -68,6 +74,10 @@ public class ControlGameMasak : MonoBehaviour
     [Header("LEVEL SYSTEM")]
     public int level = 1;
 
+    [Header("LEVEL CONFIG")]
+    public List<LevelData> levelDatas = new List<LevelData>();
+    private int totalPembeli;
+
     [Header("BUTTON MAKANAN")]
     public GameObject buttonNasi;
     public GameObject buttonIkan;
@@ -103,7 +113,9 @@ public class ControlGameMasak : MonoBehaviour
 
     void Start()
     {
+        level = PlayerPrefs.GetInt("levelDipilih", 1);
         UpdateButtonByLevel();
+        SetTotalPembeliByLevel();
         titikTerisi = new bool[titikStopPembeli.Length];
 
         makananRect = makanan.GetComponent<RectTransform>();
@@ -118,6 +130,21 @@ public class ControlGameMasak : MonoBehaviour
             panelGameOver.SetActive(false); 
     }
 
+    void SetTotalPembeliByLevel()
+{
+    foreach (LevelData data in levelDatas)
+    {
+        if (data.level == level)
+        {
+            totalPembeli = data.totalPembeli;
+            return;
+        }
+    }
+
+    // fallback kalau tidak ada data
+    totalPembeli = 3;
+}
+
     void Update()
     {
         if (isGameOver) return; 
@@ -131,16 +158,19 @@ public class ControlGameMasak : MonoBehaviour
 
     void CheckLevelUp()
 {
-    if (jumlahDilayani == 3)
-        level = 2;
-    else if (jumlahDilayani == 4)
-        level = 3;
-    else if (jumlahDilayani == 5)
-        level = 4;
-    else if (jumlahDilayani == 6)
-        level = 5;
+    // jika semua pembeli di level ini sudah spawn & selesai
+    if (jumlahDilayani >= totalPembeli && jumlahSpawn >= totalPembeli)
+    {
+        level++;
 
-    UpdateButtonByLevel(); // 🔥 WAJIB
+        Debug.Log("NAIK LEVEL: " + level);
+
+        jumlahDilayani = 0;
+        jumlahSpawn = 0;
+
+        SetTotalPembeliByLevel();
+        UpdateButtonByLevel();
+    }
 }
 
     void UpdateButtonByLevel()
@@ -326,6 +356,7 @@ if (currentTime[i] <= maxTime * 0.5f)
 
             sudahPergi[indexMakananAktif] = true;
             jumlahDilayani++;
+            
 
             // STOP TIMER SLOT
             int slot = jalurNPC[indexMakananAktif];

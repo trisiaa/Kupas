@@ -1,17 +1,32 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour
 {
+    public GameObject mainMenuPanel;
+    public GameObject levelSelectionPanel;
+
     public void ButtonPlay()
     {
-        SceneManager.LoadScene(1); // load scene index 1 (ingame)
+        mainMenuPanel.SetActive(false);
+        levelSelectionPanel.SetActive(true);
+    }
+
+    public void ButtonCloseLevel()
+    {
+        levelSelectionPanel.SetActive(false);
+        mainMenuPanel.SetActive(true);
+    }
+
+    // 🔥 INI YANG PENTING
+    public void PilihLevel(int level)
+    {
+        PlayerPrefs.SetInt("levelDipilih", level);
+        SceneManager.LoadScene("ingame");
     }
 
     public void ButtonExit()
     {
-        Application.Quit(); // keluar game
+        Application.Quit();
     }
 }
