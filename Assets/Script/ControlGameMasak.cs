@@ -12,6 +12,13 @@ public class LevelData
     public int totalPembeli;
 }
 
+[System.Serializable]
+public class SpecialNPCData
+{
+    public int level;
+    public Sprite sprite;
+}
+
 public class ControlGameMasak : MonoBehaviour
 {
     public Animator piringMakanan;
@@ -48,6 +55,15 @@ public class ControlGameMasak : MonoBehaviour
 
     private List<bool> pembeliKabur = new List<bool>();
 
+    [Header("NPC SPECIAL")]
+public GameObject prefabNPCSpecial; // 🔥 GLOBAL (hanya 1 prefab)
+public List<SpecialNPCData> specialNPCDatas = new List<SpecialNPCData>();
+
+private bool isSpecialSpawned = false;
+private GameObject currentSpecialNPC;
+private bool isSpecialServed = false;
+
+    
     [Header("Pesan Makanan")]
     public List<string> pesanMakanan = new List<string>();
 
@@ -68,6 +84,9 @@ public class ControlGameMasak : MonoBehaviour
     [Header("UI CLOSE")]
     public GameObject tombolClose;
 
+    [Header("DIALOG SPECIAL UI")]
+    public GameObject uiDialogSpecial;
+
     [Header("UI PAUSE")]
     public GameObject panelPause;
 
@@ -77,6 +96,9 @@ public class ControlGameMasak : MonoBehaviour
     [Header("LEVEL CONFIG")]
     public List<LevelData> levelDatas = new List<LevelData>();
     private int totalPembeli;
+    private int totalTarget; // total termasuk NPC special
+    private int jumlahSpawnTotal;
+
 
     [Header("BUTTON MAKANAN")]
     public GameObject buttonNasi;
@@ -137,12 +159,14 @@ public class ControlGameMasak : MonoBehaviour
         if (data.level == level)
         {
             totalPembeli = data.totalPembeli;
+            totalTarget = totalPembeli + 1; // +1 untuk special NPC
             return;
         }
     }
 
     // fallback kalau tidak ada data
     totalPembeli = 3;
+    totalTarget = totalPembeli + 1;
 }
 
     void Update()
@@ -154,6 +178,7 @@ public class ControlGameMasak : MonoBehaviour
         MoveMakanan();
         UpdateTimerSlot();
         UpdateSisaPembeli();
+        CheckSpawnSpecial();
     }
 
     void CheckLevelUp()
@@ -233,18 +258,16 @@ public class ControlGameMasak : MonoBehaviour
 
     void UpdateSisaPembeli()
 {
-    countSisaPembeli = totalPembeli - jumlahSpawn;
+    countSisaPembeli = totalTarget - jumlahSpawnTotal;
 
     if (countSisaPembeli < 0)
         countSisaPembeli = 0;
 
-    // UPDATE TEXT
     if (textTotalPembeli != null)
     {
         textTotalPembeli.text = countSisaPembeli.ToString();
     }
 
-    // AKTIFKAN CLOSE JIKA 0
     if (tombolClose != null)
     {
         tombolClose.SetActive(countSisaPembeli == 0);
@@ -347,16 +370,37 @@ if (currentTime[i] <= maxTime * 0.5f)
         if (indexMakananAktif >= 0 && indexMakananAktif < npcAktif.Count)
         {
             Transform menu = npcAktif[indexMakananAktif].transform.Find("Menu");
-            if (menu != null)
-                menu.gameObject.SetActive(false);
+
+if (npcAktif[indexMakananAktif] == currentSpecialNPC)
+{
+    // 🔥 SPECIAL → JANGAN MATIKAN MENU
+}
+else
+{
+    // 🔥 NPC BIASA → MATIKAN MENU
+    if (menu != null)
+        menu.gameObject.SetActive(false);
+}
 
             ResetMakananKeAwal();
 
             yield return new WaitForSeconds(0.2f);
 
-            sudahPergi[indexMakananAktif] = true;
             jumlahDilayani++;
             
+            if (npcAktif[indexMakananAktif] == currentSpecialNPC)
+{
+    isSpecialServed = true;
+
+    ShowDialogSpecial();
+
+    yield break; // 🔥 PENTING
+}
+else
+{
+    sudahPergi[indexMakananAktif] = true;
+}
+
 
             // STOP TIMER SLOT
             int slot = jalurNPC[indexMakananAktif];
@@ -379,6 +423,7 @@ if (currentTime[i] <= maxTime * 0.5f)
 
     void SpawnPembeli()
     {
+        
         if (jumlahSpawn >= totalPembeli) return;
 
         timer += Time.deltaTime;
@@ -421,6 +466,7 @@ if (currentTime[i] <= maxTime * 0.5f)
 
         titikTerisi[jalur] = true;
         jumlahSpawn++;
+        jumlahSpawnTotal++;
 
         // MASUK SLOT SESUAI JALUR
         if (jalur < 2)
@@ -429,7 +475,120 @@ if (currentTime[i] <= maxTime * 0.5f)
         }
     }
 
+    void SpawnSpecialNPC(int jalur)
+{
+    SpecialNPCData data = specialNPCDatas.Find(x => x.level == level);
 
+    if (data == null)
+    {
+        Debug.LogWarning("Special NPC tidak ada di level " + level);
+        return;
+    }
+
+    GameObject npc = Instantiate(prefabNPCSpecial, parentPembeli);
+    currentSpecialNPC = npc;
+
+    RectTransform rect = npc.GetComponent<RectTransform>();
+    rect.anchoredPosition = titikResponPembeli[jalur].anchoredPosition;
+
+    // set sprite
+    Image img = npc.GetComponent<Image>();
+    if (img != null && data.sprite != null)
+    {
+        img.sprite = data.sprite;
+    }
+
+    // animasi jalan
+    Animator anim = npc.GetComponent<Animator>();
+    if (anim != null)
+    {
+        anim.SetBool("isJalan", true);
+    }
+
+    // matikan menu dulu
+    Transform menu = npc.transform.Find("Menu");
+    if (menu != null)
+        menu.gameObject.SetActive(false);
+
+    npcAktif.Add(npc);
+    jalurNPC.Add(jalur);
+    sudahSampai.Add(false);
+    sudahPergi.Add(false);
+    pembeliKabur.Add(false);
+
+    titikTerisi[jalur] = true;
+
+    // slot timer (kalau 0 atau 1)
+    if (jalur < 2)
+    {
+        npcSlot[jalur] = npc;
+    }
+
+    jumlahSpawnTotal++;
+    isSpecialSpawned = true;
+
+    Debug.Log("SPECIAL NPC SPAWN DI SLOT: " + jalur);
+}
+
+    void CheckSpawnSpecial()
+{
+    if (isSpecialSpawned) return;
+
+    // 🔥 jika semua pembeli SUDAH spawn
+    if (jumlahSpawn >= totalPembeli)
+    {
+        // 🔥 cek apakah ada slot kosong
+        for (int i = 0; i < titikTerisi.Length; i++)
+        {
+            if (!titikTerisi[i]) // ada slot kosong
+            {
+                SpawnSpecialNPC(i); // spawn di slot itu
+                break;
+            }
+        }
+    }
+}
+
+    void ShowDialogSpecial()
+{
+    if (currentSpecialNPC == null) return;
+
+    // 🔥 MATIKAN ANIMATOR
+    Animator anim = currentSpecialNPC.GetComponent<Animator>();
+    if (anim != null)
+    {
+        anim.SetBool("isJalan", false);
+        anim.enabled = false;
+    }
+
+    // 🔥 AMBIL MENU
+    Transform menu = currentSpecialNPC.transform.Find("Menu");
+    if (menu == null)
+    {
+        Debug.LogError("Menu tidak ditemukan!");
+        return;
+    }
+
+    // 🔥 SEMBUNYIKAN MAKANAN
+    Transform makanan = menu.Find("makanan");
+    if (makanan != null)
+        makanan.gameObject.SetActive(false);
+
+    // 🔥 SEMBUNYIKAN SLIDER
+    Transform slider = menu.Find("Slider");
+    if (slider != null)
+        slider.gameObject.SetActive(false);
+
+    // 🔥 TAMPILKAN BUTTON DIALOG
+    Transform dialog = menu.Find("Button dialog");
+    if (dialog != null)
+        dialog.gameObject.SetActive(true);
+    else
+        Debug.LogError("Button dialog tidak ditemukan!");
+
+    Debug.Log("SPECIAL DIALOG MUNCUL DI NPC");
+}
+    
     void MovePembeli()
     {
         for (int i = 0; i < npcAktif.Count; i++)
@@ -460,15 +619,24 @@ if (currentTime[i] <= maxTime * 0.5f)
                     {
                         menu.gameObject.SetActive(true);
 
-                        string pesanan = RandomMenu(menu);
+                        string pesanan;
+
+if (npcAktif[i] == currentSpecialNPC)
+{
+    pesanan = RandomMenu(menu); // bisa kamu ganti nanti
+}
+else
+{
+    pesanan = RandomMenu(menu);
+}
 
                         if (i < pesanMakanan.Count)
                             pesanMakanan[i] = pesanan;
                         else
                             pesanMakanan.Add(pesanan);
 
-                        // START TIMER SLOT
-                        int slot = jalurNPC[i];
+// 🔥 SPECIAL PAKAI SLOT 0
+int slot = jalurNPC[i];
 
                         if (slot < 2)
                         {
@@ -488,8 +656,14 @@ if (currentTime[i] <= maxTime * 0.5f)
                 }
             }
             else
-            {
-                RectTransform target = titikResponPembeli[jalurNPC[i]];
+{
+    // 🔥 JIKA SPECIAL SUDAH DILAYANI → DIAM
+    if (npcAktif[i] == currentSpecialNPC && isSpecialServed)
+    {
+        continue;
+    }
+
+    RectTransform target = titikResponPembeli[jalurNPC[i]];
 
                 npc.anchoredPosition = Vector2.MoveTowards(
                     npc.anchoredPosition,
