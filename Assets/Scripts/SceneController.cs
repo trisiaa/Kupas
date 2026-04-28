@@ -6,58 +6,100 @@ public class SceneController : MonoBehaviour
 {
     [Header("Scene Settings")]
     public string nextSceneName;
-    public string mainMenuSceneName = "mainmenu"; // Nama scene menu utama Anda
+    public string mainMenuSceneName = "mainmenu";
 
     [Header("Timer Options")]
     public bool useTimer = false;
     public float delayInSeconds = 5f;
 
+    [Header("Tutorial Settings")]
+    public GameObject tutorialPanel;
+    private bool isTutorialOpen = false;
+
     void Start()
     {
+        Time.timeScale = 1f;
+        if (tutorialPanel != null)
+        {
+            tutorialPanel.SetActive(false);
+        }
+
         if (useTimer)
         {
             StartCoroutine(WaitAndChangeScene());
         }
     }
 
-    // Pindah ke scene yang ditentukan di Inspector (misal: Level Berikutnya)
-    public void LoadNextScene()
+    // Fungsi pembantu untuk memutar suara agar kode lebih bersih
+    private void PlayButtonSound()
     {
-        if (!string.IsNullOrEmpty(nextSceneName))
+        if (AudioManager.instance != null)
         {
-            SceneManager.LoadScene(nextSceneName);
-        }
-        else
-        {
-            Debug.LogWarning("Nama scene berikutnya belum diisi!");
+            // Mengambil AudioClip 'buttons' dari AudioManager
+            AudioManager.instance.PlaySFX(AudioManager.instance.buttons);
         }
     }
 
-    // KHUSUS: Kembali ke Main Menu
+    public void OpenTutorial()
+    {
+        PlayButtonSound(); // <--- Play SFX
+        if (tutorialPanel != null)
+        {
+            tutorialPanel.SetActive(true);
+            Time.timeScale = 0f;
+            isTutorialOpen = true;
+        }
+    }
+
+    public void CloseTutorial()
+    {
+        PlayButtonSound(); // <--- Play SFX
+        if (tutorialPanel != null)
+        {
+            tutorialPanel.SetActive(false);
+            Time.timeScale = 1f;
+            isTutorialOpen = false;
+        }
+    }
+
+    // 1. Fungsi untuk memutar suara default 'buttons' yang ada di AudioManager
+    public void PlayDefaultButtonSFX()
+    {
+        if (AudioManager.instance != null)
+        {
+            AudioManager.instance.PlaySFX(AudioManager.instance.buttons);
+        }
+    }
+
+    // 2. Fungsi yang lebih fleksibel: Kamu bisa memasukkan AudioClip apa saja langsung dari Inspector
+    public void PlayCustomSFX(AudioClip clip)
+    {
+        if (AudioManager.instance != null && clip != null)
+        {
+            AudioManager.instance.PlaySFX(clip);
+        }
+    }
+
+    public void RestartScene()
+    {
+        PlayButtonSound(); // <--- Play SFX
+        Time.timeScale = 1f; 
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
     public void BackToMainMenu()
     {
+        PlayButtonSound(); // <--- Play SFX
+        Time.timeScale = 1f;
         if (!string.IsNullOrEmpty(mainMenuSceneName))
         {
             SceneManager.LoadScene(mainMenuSceneName);
         }
-        else
-        {
-            Debug.LogError("Nama scene Main Menu belum ditentukan di Inspector!");
-        }
     }
 
-    // Mengulang scene yang sedang aktif saat ini
-    public void RestartScene()
-    {
-        string currentSceneName = SceneManager.GetActiveScene().name;
-        SceneManager.LoadScene(currentSceneName);
-    }
-
-    // Keluar dari aplikasi
     public void QuitGame()
     {
-        Debug.Log("Game is quitting..."); 
-        
+        PlayButtonSound(); // <--- Play SFX
         #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
         #else
@@ -65,9 +107,20 @@ public class SceneController : MonoBehaviour
         #endif
     }
 
+    public void LoadNextScene()
+    {
+        PlayButtonSound(); // <--- Play SFX
+        Time.timeScale = 1f;
+        if (!string.IsNullOrEmpty(nextSceneName))
+        {
+            SceneManager.LoadScene(nextSceneName);
+        }
+    }
+
     IEnumerator WaitAndChangeScene()
     {
         yield return new WaitForSeconds(delayInSeconds);
+        // LoadNextScene() sudah memanggil PlayButtonSound() di atas
         LoadNextScene();
     }
 }

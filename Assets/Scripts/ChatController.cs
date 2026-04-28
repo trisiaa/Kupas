@@ -7,6 +7,7 @@ using System.Collections;
 
 public class ChatController : MonoBehaviour 
 {
+    // ... (Variabel Header tetap sama seperti kode aslimu) ...
     [Header("Ink Configuration")]
     public TextAsset inkJSON;
     private Story story;
@@ -24,7 +25,7 @@ public class ChatController : MonoBehaviour
     public GameObject finishButton;
 
     [Header("Appearance Settings")]
-    public float delayBetweenBubbles = 1.0f; // Jeda antar balon muncul
+    public float delayBetweenBubbles = 1.0f; 
 
     [Header("Finish UI")]
     public GameObject levelCompletePanel; 
@@ -50,12 +51,10 @@ public class ChatController : MonoBehaviour
 
     IEnumerator DisplayNextLines() 
     {
-        // 1. Bersihkan UI
         foreach (Transform child in choiceGroup.transform) Destroy(child.gameObject);
         choiceGroup.SetActive(false);
         finishButton.SetActive(false);
 
-        // 2. Munculkan per Balon Chat
         while (story.canContinue) 
         {
             string text = story.Continue().Trim();
@@ -65,18 +64,19 @@ public class ChatController : MonoBehaviour
             if (tags.Contains("Player")) type = "Player";
             else if (tags.Contains("Narrative")) type = "Narrative";
             
-            // Langsung buat balon dengan teks lengkap
             CreateFullBubble(text, type);
 
-            // Scroll otomatis ke bawah setiap ada balon baru
+            // --- SFX SAAT BUBBLE MUNCUL ---
+            if (AudioManager.instance != null) {
+                AudioManager.instance.PlaySFX(AudioManager.instance.dialogue);
+            }
+
             Canvas.ForceUpdateCanvases();
             scrollRect.verticalNormalizedPosition = 0f;
 
-            // TUNGGU sebelum memunculkan balon berikutnya
             yield return new WaitForSeconds(delayBetweenBubbles);
         }
 
-        // 3. Tampilkan Pilihan/Selesai
         if (story.currentChoices.Count > 0) 
         {
             ShowChoices();
@@ -99,7 +99,6 @@ public class ChatController : MonoBehaviour
         GameObject instance = Instantiate(prefab, chatContent);
         TMP_Text textComponent = instance.GetComponentInChildren<TMP_Text>();
 
-        // Set teks langsung tanpa animasi huruf
         string cleanText = (type == "Narrative") ? text : 
                            (text.Contains(":") ? text.Split(':')[1].Trim() : text);
         
@@ -113,8 +112,14 @@ public class ChatController : MonoBehaviour
         {
             GameObject buttonObj = Instantiate(choiceButtonPrefab, choiceGroup.transform);
             buttonObj.GetComponentInChildren<TMP_Text>().text = choice.text;
+            
             buttonObj.GetComponent<Button>().onClick.AddListener(() => 
             {
+                // --- SFX SAAT TOMBOL PILIHAN DI-KLIK ---
+                if (AudioManager.instance != null) {
+                    AudioManager.instance.PlaySFX(AudioManager.instance.buttons);
+                }
+
                 story.ChooseChoiceIndex(choice.index);
                 RefreshView();
             });
@@ -123,6 +128,11 @@ public class ChatController : MonoBehaviour
 
     public void OnFinishClicked() 
     {
+        // --- SFX SAAT TOMBOL FINISH DI-KLIK ---
+        if (AudioManager.instance != null) {
+            AudioManager.instance.PlaySFX(AudioManager.instance.buttons);
+        }
+
         if (levelCompletePanel != null) levelCompletePanel.SetActive(true);
         if (chatCanvasGroup != null) 
         {
