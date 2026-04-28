@@ -813,7 +813,11 @@ int slot = jalurNPC[i];
         return;
     }
 
-    Instantiate(data.prefabDialog);
+    // Buat objek dari prefab
+    GameObject dialogBaru = Instantiate(data.prefabDialog);
+    
+    // Pastikan objek tersebut aktif agar muncul di layar
+    dialogBaru.SetActive(true);
 }
 
     public void ButtonSendMakanan()
