@@ -10,6 +10,7 @@ public class LevelData
 {
     public int level;
     public int totalPembeli;
+    public Sprite gambarGagal;
 }
 
 [System.Serializable]
@@ -17,6 +18,7 @@ public class SpecialNPCData
 {
     public int level;
     public Sprite sprite;
+    public GameObject prefabDialog;
 }
 
 public class ControlGameMasak : MonoBehaviour
@@ -71,7 +73,8 @@ public class ControlGameMasak : MonoBehaviour
     public Transform makanan;
 
     [Header("GAME OVER")]
-    public GameObject panelGameOver; 
+    public GameObject panelGameOver;
+    public Image gambarGagalImage;
     private bool isGameOver = false; 
     
     [Header("DEBUG PEMBELI")]
@@ -233,18 +236,29 @@ public class ControlGameMasak : MonoBehaviour
 }
 
     void TriggerGameOver() 
+{
+    if (isGameOver) return;
+
+    isGameOver = true;
+
+    Debug.Log("GAME OVER!");
+
+    LevelData data = levelDatas.Find(x => x.level == level);
+
+    if (data != null && gambarGagalImage != null)
     {
-        if (isGameOver) return;
-
-        isGameOver = true;
-
-        Debug.Log("GAME OVER!");
-
-        if (panelGameOver != null)
-            panelGameOver.SetActive(true);
-
-        Time.timeScale = 0f;
+        gambarGagalImage.sprite = data.gambarGagal;
     }
+    else
+    {
+        Debug.LogWarning("Gambar gagal tidak ditemukan untuk level " + level);
+    }
+
+    if (panelGameOver != null)
+        panelGameOver.SetActive(true);
+
+    Time.timeScale = 0f;
+}
 
     void UpdateSisaPembeli()
 {
@@ -549,13 +563,22 @@ else
     if (slider != null)
         slider.gameObject.SetActive(false);
 
-    Transform dialog = menu.Find("Button dialog");
-    if (dialog != null)
-        dialog.gameObject.SetActive(true);
-    else
-        Debug.LogError("Button dialog tidak ditemukan!");
+    menu.gameObject.SetActive(false);
 
-    Debug.Log("SPECIAL DIALOG MUNCUL DI NPC");
+    Transform dialog = currentSpecialNPC.transform.Find("Button dialog");
+
+if (dialog != null)
+{
+    Button btn = dialog.GetComponent<Button>();
+
+    if (btn != null)
+    {
+        btn.onClick.RemoveAllListeners();
+        btn.onClick.AddListener(BukaDialogSpecial);
+    }
+
+    dialog.gameObject.SetActive(true);
+}
 }
     
     void MovePembeli()
@@ -774,6 +797,24 @@ int slot = jalurNPC[i];
     SceneManager.LoadScene(0); 
 }
 
+    public void BukaDialogSpecial()
+{
+    SpecialNPCData data = specialNPCDatas.Find(x => x.level == level);
+
+    if (data == null)
+    {
+        Debug.LogError("Data level tidak ditemukan!");
+        return;
+    }
+
+    if (data.prefabDialog == null)
+    {
+        Debug.LogError("Prefab dialog belum diisi!");
+        return;
+    }
+
+    Instantiate(data.prefabDialog);
+}
 
     public void ButtonSendMakanan()
     {

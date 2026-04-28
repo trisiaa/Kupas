@@ -18,13 +18,6 @@ public class MainMenu : MonoBehaviour
         mainMenuPanel.SetActive(true);
     }
 
-    // 🔥 INI YANG PENTING
-    public void PilihLevel(int level)
-    {
-        PlayerPrefs.SetInt("levelDipilih", level);
-        SceneManager.LoadScene("ingame");
-    }
-
     public void ButtonExit()
     {
         Application.Quit();
