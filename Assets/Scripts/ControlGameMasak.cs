@@ -241,6 +241,11 @@ public class ControlGameMasak : MonoBehaviour
 
     isGameOver = true;
 
+    if (AudioManager.instance != null)
+    {
+        AudioManager.instance.PlaySFX(AudioManager.instance.gameOver);
+    }
+
     Debug.Log("GAME OVER!");
 
     LevelData data = levelDatas.Find(x => x.level == level);
@@ -766,6 +771,11 @@ int slot = jalurNPC[i];
 
     public void ButtonPause()
 {
+    if (AudioManager.instance != null)
+    {
+        AudioManager.instance.PlaySFX(AudioManager.instance.buttons);
+    }
+
     Time.timeScale = 0f; 
 
     if (panelPause != null)
@@ -776,6 +786,11 @@ int slot = jalurNPC[i];
 
     public void ButtonLanjut()
 {
+    if (AudioManager.instance != null)
+    {
+        AudioManager.instance.PlaySFX(AudioManager.instance.buttons);
+    }
+
     Time.timeScale = 1f; 
 
     if (panelPause != null)
@@ -786,12 +801,22 @@ int slot = jalurNPC[i];
 
     public void ButtonRetry()
 {
+    if (AudioManager.instance != null)
+    {
+        AudioManager.instance.PlaySFX(AudioManager.instance.buttons);
+    }
+
     Time.timeScale = 1f; 
     SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
 }
 
     public void ButtonMainMenu()
 {
+    if (AudioManager.instance != null)
+    {
+        AudioManager.instance.PlaySFX(AudioManager.instance.buttons);
+    }
+
     Time.timeScale = 1f; 
 
     SceneManager.LoadScene(0); 
@@ -799,6 +824,11 @@ int slot = jalurNPC[i];
 
     public void BukaDialogSpecial()
 {
+    if (AudioManager.instance != null)
+    {
+        AudioManager.instance.PlaySFX(AudioManager.instance.buttons);
+    }
+    
     SpecialNPCData data = specialNPCDatas.Find(x => x.level == level);
 
     if (data == null)
@@ -899,13 +929,19 @@ if (slot < 2)
     }
 
     public void TambahMakanan(GameObject makanan)
+{
+    if (!makanan.activeInHierarchy)
     {
-        if (!makanan.activeInHierarchy)
+        makanan.SetActive(true);
+        ButtonAnimation(piringMakanan);
+
+        // 🔊 TAMBAHAN AUDIO (tidak merusak fungsi lama)
+        if (AudioManager.instance != null)
         {
-            makanan.SetActive(true);
-            ButtonAnimation(piringMakanan);
+            AudioManager.instance.PlaySFX(AudioManager.instance.food);
         }
     }
+}
 
     public void HapusSemuaMakanan()
     {
@@ -918,5 +954,11 @@ if (slot < 2)
         sambal.SetActive(false);
 
         ButtonAnimation(piringMakanan);
+
+        if (AudioManager.instance != null)
+    {
+        AudioManager.instance.PlaySFX(AudioManager.instance.food);
     }
+    }
+    
 }
