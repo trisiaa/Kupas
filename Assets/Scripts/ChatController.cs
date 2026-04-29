@@ -122,12 +122,23 @@ public class ChatController : MonoBehaviour
     }
 
     public void OnFinishClicked() 
+{
+    if (levelCompletePanel != null) levelCompletePanel.SetActive(true);
+
+    if (chatCanvasGroup != null) 
     {
-        if (levelCompletePanel != null) levelCompletePanel.SetActive(true);
-        if (chatCanvasGroup != null) 
-        {
-            chatCanvasGroup.interactable = false;
-            chatCanvasGroup.blocksRaycasts = false;
-        }
+        chatCanvasGroup.interactable = false;
+        chatCanvasGroup.blocksRaycasts = false;
     }
+
+    int levelDipilih = PlayerPrefs.GetInt("levelDipilih", 1);
+    int levelTerbuka = PlayerPrefs.GetInt("levelTerbuka", 1);
+
+    // hanya unlock kalau menyelesaikan level tertinggi
+    if (levelDipilih >= levelTerbuka)
+    {
+        PlayerPrefs.SetInt("levelTerbuka", levelDipilih + 1);
+        Debug.Log("Unlock level: " + (levelDipilih + 1));
+    }
+}
 }
