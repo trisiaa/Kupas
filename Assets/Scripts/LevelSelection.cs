@@ -43,17 +43,27 @@ public class LevelSelection : MonoBehaviour
     // Tetap dipanggil dari OnClick di Inspector
     public void PilihLevel(int level)
     {
-        int levelTerbuka = PlayerPrefs.GetInt("levelTerbuka", 1);
+    int levelTerbuka = PlayerPrefs.GetInt("levelTerbuka", 1);
 
-        // proteksi kedua (kalau UI salah set)
-        if (level > levelTerbuka)
-        {
-            Debug.Log("Level masih terkunci!");
-            return;
-        }
+    if (level > levelTerbuka)
+    {
+        Debug.Log("Level masih terkunci!");
+        return;
+    }
 
-        PlayerPrefs.SetInt("levelDipilih", level);
+    // Simpan level yang dipilih agar scene 'ingame' tahu harus load data apa
+    PlayerPrefs.SetInt("levelDipilih", level);
+
+    // LOGIKA BARU: Cek apakah level ini butuh scene pembuka?
+    if (level == 1) // Contoh: Level 5 punya cerita pembuka
+    {
+        SceneManager.LoadScene("CutsceneIntro");
+    }
+    else
+    {
+        // Level normal langsung ke gameplay
         SceneManager.LoadScene("ingame");
+    }
     }
 
     public void ResetProgress()
