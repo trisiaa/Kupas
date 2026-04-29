@@ -2,11 +2,18 @@ using UnityEngine;
 
 public class AudioManager : MonoBehaviour
 {
+    [Header("Audio Sources")]
     [SerializeField] AudioSource musicSource;
     [SerializeField] AudioSource SFXSource;
 
+    [Header("Audio Clips")]
     public AudioClip background;
     public AudioClip buttons;
+    public AudioClip dialogue;
+    public AudioClip gameOver;
+    public AudioClip gameComplete;
+    public AudioClip food;
+    public AudioClip tutorial;
     public static AudioManager instance;
 
     private void Awake ()

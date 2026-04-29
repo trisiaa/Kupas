@@ -7,15 +7,17 @@ public class LevelSelection : MonoBehaviour
     [System.Serializable]
     public class LevelItem
     {
-        public int levelIndex; 
-        public GameObject lockImage;  
-        public Button button;         
+        public int levelIndex;        // 1,2,3,...
+        public GameObject lockImage;  // child Image (gembok)
+        public Button button;         // Button di object Level
     }
 
     public LevelItem[] levels;
 
     void Start()
     {
+        // DEBUG: reset sekali saat testing (hapus nanti kalau sudah oke)
+        // PlayerPrefs.DeleteAll();
 
         if (!PlayerPrefs.HasKey("levelTerbuka"))
         {
@@ -28,18 +30,22 @@ public class LevelSelection : MonoBehaviour
         {
             bool isUnlocked = lvl.levelIndex <= levelTerbuka;
 
+            // 🔒 tampilkan gembok kalau terkunci
             if (lvl.lockImage != null)
                 lvl.lockImage.SetActive(!isUnlocked);
 
+            // ❌ matikan klik kalau terkunci
             if (lvl.button != null)
                 lvl.button.interactable = isUnlocked;
         }
     }
 
+    // Tetap dipanggil dari OnClick di Inspector
     public void PilihLevel(int level)
     {
         int levelTerbuka = PlayerPrefs.GetInt("levelTerbuka", 1);
 
+        // proteksi kedua (kalau UI salah set)
         if (level > levelTerbuka)
         {
             Debug.Log("Level masih terkunci!");
@@ -52,12 +58,21 @@ public class LevelSelection : MonoBehaviour
 
     public void ResetProgress()
 {
-    PlayerPrefs.DeleteAll(); 
+    PlayerPrefs.DeleteAll(); // hapus semua progress
     PlayerPrefs.SetInt("levelTerbuka", 1); // set ulang ke level 1
 
     Debug.Log("Progress di-reset!");
 
+    // reload scene biar UI langsung update
     SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 }
 
+    private void PlayButtonSound()
+    {
+        if (AudioManager.instance != null)
+        {
+            // Mengambil AudioClip 'buttons' dari AudioManager
+            AudioManager.instance.PlaySFX(AudioManager.instance.buttons);
+        }
+    }
 }
