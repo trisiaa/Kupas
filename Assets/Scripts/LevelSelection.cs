@@ -7,17 +7,15 @@ public class LevelSelection : MonoBehaviour
     [System.Serializable]
     public class LevelItem
     {
-        public int levelIndex;        // 1,2,3,...
-        public GameObject lockImage;  // child Image (gembok)
-        public Button button;         // Button di object Level
+        public int levelIndex;        
+        public GameObject lockImage;  
+        public Button button;         
     }
 
     public LevelItem[] levels;
 
     void Start()
     {
-        // DEBUG: reset sekali saat testing (hapus nanti kalau sudah oke)
-        // PlayerPrefs.DeleteAll();
 
         if (!PlayerPrefs.HasKey("levelTerbuka"))
         {
@@ -30,17 +28,16 @@ public class LevelSelection : MonoBehaviour
         {
             bool isUnlocked = lvl.levelIndex <= levelTerbuka;
 
-            // 🔒 tampilkan gembok kalau terkunci
+         
             if (lvl.lockImage != null)
                 lvl.lockImage.SetActive(!isUnlocked);
 
-            // ❌ matikan klik kalau terkunci
+        
             if (lvl.button != null)
                 lvl.button.interactable = isUnlocked;
         }
     }
 
-    // Tetap dipanggil dari OnClick di Inspector
     public void PilihLevel(int level)
     {
         int levelTerbuka = PlayerPrefs.GetInt("levelTerbuka", 1);
@@ -63,7 +60,6 @@ public class LevelSelection : MonoBehaviour
 
     Debug.Log("Progress di-reset!");
 
-    // reload scene biar UI langsung update
     SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 }
 

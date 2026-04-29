@@ -141,14 +141,20 @@ public class ChatController : MonoBehaviour
         chatCanvasGroup.blocksRaycasts = false;
     }
 
-    int levelDipilih = PlayerPrefs.GetInt("levelDipilih", 1);
     int levelTerbuka = PlayerPrefs.GetInt("levelTerbuka", 1);
 
-    // 🔓 unlock level berikutnya
-    if (levelDipilih >= levelTerbuka)
+    int maxLevel = 7;
+
+    // 🔥 hanya unlock kalau belum sampai max
+    if (levelTerbuka < maxLevel)
     {
-        PlayerPrefs.SetInt("levelTerbuka", levelDipilih + 1);
-        Debug.Log("Unlock level: " + (levelDipilih + 1));
+        levelTerbuka++;
+        PlayerPrefs.SetInt("levelTerbuka", levelTerbuka);
+        Debug.Log("Unlock level: " + levelTerbuka);
+    }
+    else
+    {
+        Debug.Log("Semua level sudah terbuka!");
     }
 }
 }

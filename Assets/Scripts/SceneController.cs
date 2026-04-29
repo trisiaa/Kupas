@@ -16,24 +16,9 @@ public class SceneController : MonoBehaviour
     public GameObject tutorialPanel;
     private bool isTutorialOpen = false;
 
-    [Header("Level Info")]
-public int levelIndex = 0; // isi di inspector (khusus pengadilan)
-
     void Start()
     {
         Time.timeScale = 1f;
-
-        if (levelIndex > 0)
-{
-    int levelTerbuka = PlayerPrefs.GetInt("levelTerbuka", 1);
-
-    // HANYA set kalau memang level aktif
-    if (levelIndex <= levelTerbuka)
-    {
-        PlayerPrefs.SetInt("levelDipilih", levelIndex);
-        Debug.Log("Set levelDipilih: " + levelIndex);
-    }
-}
 
         if (tutorialPanel != null)
         {
