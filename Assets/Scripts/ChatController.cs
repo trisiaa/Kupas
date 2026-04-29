@@ -135,6 +135,11 @@ public class ChatController : MonoBehaviour
     if (levelCompletePanel != null) 
         levelCompletePanel.SetActive(true);
 
+    if (AudioManager.instance != null)
+    {
+        AudioManager.instance.PlaySFX(AudioManager.instance.gameComplete);
+    }
+
     if (chatCanvasGroup != null) 
     {
         chatCanvasGroup.interactable = false;
@@ -145,7 +150,7 @@ public class ChatController : MonoBehaviour
 
     int maxLevel = 7;
 
-    // 🔥 hanya unlock kalau belum sampai max
+    // hanya unlock kalau belum sampai max
     if (levelTerbuka < maxLevel)
     {
         levelTerbuka++;
