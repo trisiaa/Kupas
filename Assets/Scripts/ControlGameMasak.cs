@@ -828,7 +828,7 @@ int slot = jalurNPC[i];
     {
         AudioManager.instance.PlaySFX(AudioManager.instance.buttons);
     }
-    
+
     SpecialNPCData data = specialNPCDatas.Find(x => x.level == level);
 
     if (data == null)
@@ -855,6 +855,12 @@ int slot = jalurNPC[i];
         for (int i = 0; i < npcAktif.Count; i++)
         {
             if (!sudahSampai[i] || sudahPergi[i]) continue;
+
+            if (npcAktif[i] == currentSpecialNPC && isSpecialServed)
+        {
+            Debug.Log("Special NPC sudah masuk dialog, tidak bisa dikirim makanan lagi!");
+            continue;
+        }
 
             if (IsThereSameMakanan(i))
             {
@@ -935,7 +941,6 @@ if (slot < 2)
         makanan.SetActive(true);
         ButtonAnimation(piringMakanan);
 
-        // 🔊 TAMBAHAN AUDIO (tidak merusak fungsi lama)
         if (AudioManager.instance != null)
         {
             AudioManager.instance.PlaySFX(AudioManager.instance.food);
