@@ -529,7 +529,7 @@ else
 {
     if (isSpecialSpawned) return;
 
-    if (jumlahSpawn >= totalPembeli)
+    if (jumlahSpawn >= totalPembeli && npcAktif.Count == 0)
     {
         for (int i = 0; i < titikTerisi.Length; i++)
         {
