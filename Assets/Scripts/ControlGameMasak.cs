@@ -11,6 +11,9 @@ public class LevelData
     public int level;
     public int totalPembeli;
     public Sprite gambarGagal;
+
+    [Header("UI LEVEL")]
+    public Sprite gambarLevel;
 }
 
 [System.Serializable]
@@ -87,6 +90,12 @@ public class ControlGameMasak : MonoBehaviour
     [Header("UI CLOSE")]
     public GameObject tombolClose;
 
+    [Header("NPC EMOSI")]
+    public Sprite spriteMarah;
+
+    [Header("UI LEVEL")]
+    public Image uiLevelImage;
+
     [Header("DIALOG SPECIAL UI")]
     public GameObject uiDialogSpecial;
 
@@ -118,6 +127,7 @@ public class ControlGameMasak : MonoBehaviour
     public bool[] isTimerActive = new bool[2];
     public float[] currentTime = new float[2];
     public Slider[] sliderTimer = new Slider[2];
+    private bool[] sudahMarah = new bool[2];
 
     private GameObject[] npcSlot = new GameObject[2];
 
@@ -135,6 +145,7 @@ public class ControlGameMasak : MonoBehaviour
     {
         level = PlayerPrefs.GetInt("levelDipilih", 1);
         UpdateButtonByLevel();
+        UpdateUILevel();
         SetTotalPembeliByLevel();
         titikTerisi = new bool[titikStopPembeli.Length];
 
@@ -184,6 +195,7 @@ public class ControlGameMasak : MonoBehaviour
     if (jumlahDilayani >= totalPembeli && jumlahSpawn >= totalPembeli)
     {
         level++;
+        UpdateUILevel();
 
         Debug.Log("NAIK LEVEL: " + level);
 
@@ -206,6 +218,20 @@ public class ControlGameMasak : MonoBehaviour
     buttonTempe.SetActive(level >= 3);
     buttonSayur.SetActive(level >= 4);
     buttonAyam.SetActive(level >= 5);
+}
+
+void UpdateUILevel()
+{
+    LevelData data = levelDatas.Find(x => x.level == level);
+
+    if (data != null && uiLevelImage != null)
+    {
+        uiLevelImage.sprite = data.gambarLevel;
+    }
+    else
+    {
+        Debug.LogWarning("UI Level tidak ditemukan untuk level " + level);
+    }
 }
 
     void UpdateUnlockMakanan()
@@ -297,12 +323,24 @@ public class ControlGameMasak : MonoBehaviour
             {
                 sliderTimer[i].value = currentTime[i];
 
-if (currentTime[i] <= maxTime * 0.5f)
+if (currentTime[i] <= maxTime * 0.5f && !sudahMarah[i])
 {
+    sudahMarah[i] = true;
+
+    // Ubah warna slider
     Image fill = sliderTimer[i].fillRect.GetComponent<Image>();
     if (fill != null)
     {
         fill.color = Color.red;
+    }
+
+    if (npcSlot[i] != null)
+    {
+        Transform marah = npcSlot[i].transform.Find("npc marah");
+        if (marah != null)
+        {
+            marah.gameObject.SetActive(true);
+        }
     }
 }
             }
@@ -373,6 +411,11 @@ if (currentTime[i] <= maxTime * 0.5f)
         if (indexMakananAktif >= 0 && indexMakananAktif < npcAktif.Count)
         {
             Transform menu = npcAktif[indexMakananAktif].transform.Find("Menu");
+            Transform marah = npcAktif[indexMakananAktif].transform.Find("npc marah");
+if (marah != null)
+{
+    marah.gameObject.SetActive(false);
+}
 
 if (npcAktif[indexMakananAktif] == currentSpecialNPC)
 {
@@ -638,6 +681,13 @@ int slot = jalurNPC[i];
                         {
                             isTimerActive[slot] = true;
                             currentTime[slot] = maxTime;
+                            sudahMarah[slot] = false;
+
+    Transform marah = npc.transform.Find("npc marah");
+    if (marah != null)
+    {
+        marah.gameObject.SetActive(false);
+    }
 
                             Slider s = menu.GetComponentInChildren<Slider>();
                             sliderTimer[slot] = s;
