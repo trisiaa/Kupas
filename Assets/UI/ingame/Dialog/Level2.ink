@@ -1,89 +1,50 @@
-// --- Narasi Awal ---
+// Deskripsi suasana
 * [Lihat kondisi buruh]
-    Buruh terlihat sangat kelelahan. Rompi yang dikenakannya tampak sobek di beberapa sisi. #Narrative
-    -> sapaan_awal
+    Buruh terlihat sangat kelelahan dan rompi yang dikenakannya tampak robek di beberapa bagian. #Narrative
+    -> percakapan_utama
 
-=== sapaan_awal ===
-Buruh: "Waahhh, makanannya selalu keliatan enak mas. Porsinya juga mantap." #NPC
+=== percakapan_utama ===
+Buruh: "Waahhh, makanannya selalu keliatan enak, Mas. Porsinya juga mantap!" #NPC
 
-+ [Balas: "Lumayan buat tenaga"]
-    Pemain: "Hahaha, lumayan buat nambah tenaga, Pak. Harus kenyang kalau mau lanjut lagi." #Player
-    -> banting_tulang
-+ [Balas: "Porsi spesial untuk Bapak"]
-    Pemain: "Sengaja saya banyakin Pak, supaya Bapak ada tenaga ekstra hari ini." #Player
-    -> banting_tulang
++ [Balas: "Hahaha, lumayan..."]
+    Pemain: "Hahaha, lumayan buat nambah tenaga, Pak." #Player
+    Buruh: "Iya, Mas. Udah beneran banting tulang ini." #NPC
+    -> tanya_beban_kerja
 
-=== banting_tulang ===
-Buruh: "Iya, Mas. Udah beneran banting tulang ini." #NPC
+=== tanya_beban_kerja ===
++ [Balas: "Kelihatannya kok kerjanya.."]
+    Pemain: "Kelihatannya kok kerjanya berat sekali, Pak?" #Player
+    Buruh: "Iya, Mas. Saya kerja dari kemarin malam. Bayangkan secapek apa saya sekarang." #NPC
+-> pilihan_jam_kerja_atau_APD
+`
+// Pilihan untuk membahas APD atau Jam Kerja
+=== pilihan_jam_kerja_atau_APD ===
++ [Tanya soal jam kerja]
+    -> bahasan_jam_kerja
 
-+ [Tanya: "Kerjanya berat sekali, Pak?"]
-    Pemain: "Kelihatannya kok kerjanya berat sekali, Pak? Sampai keringetan begitu." #Player
-    -> durasi_kerja
-+ [Tanya: "Bapak sudah kerja berapa lama?"]
-    Pemain: "Baru selesai shift, Pak? Kelihatannya Bapak lelah sekali." #Player
-    -> durasi_kerja
++ [Tanya soal rompi sobek]
+    -> bahasan_apd
 
-=== durasi_kerja ===
-Buruh: "Iya, Mas. Saya kerja dari kemarin malam. Bayangkan secapek apa saya sekarang." #NPC
-
-+ [Tanya soal aturan 12 jam]
-    Pemain: "Dari kemarin malam? Kerja lebih dari 12 jam? Peraturan perusahaan memang seperti itu atau gimana, Pak?" #Player
-    -> alasan_buruh
-+ [Tanya soal alasan lembur]
-    Pemain: "Waduh, apa memang tidak ada pembatasan jam kerja di pabrik, Pak?" #Player
-    -> alasan_buruh
-
-=== alasan_buruh ===
-Buruh: "Iya, kalau ngga nambah jam kerja, nanti bisa kehilangan kerjaan, Mas. Sebenarnya banyak juga yang senasib kerja dari kemarin malam. Itu udah keputusan dari sananya." #NPC
-
-+ [Beri tahu aturan PP No. 35 Tahun 2021]
-    Pemain: "Tapi Pak, ada peraturan pemerintah. Dalam PP Nomor 35 Tahun 2021, kerja itu maksimal 8 jam sehari untuk 5 hari kerja." #Player
-    Pemain: "Lembur pun maksimal cuma 4 jam. Jadi totalnya tidak boleh lewat 12 jam sehari." #Player
-    -> respon_jam_kerja
-+ [Kritik kebijakan perusahaan]
-    Pemain: "Harusnya perusahaan nggak boleh asal paksa lembur, Pak. Ada batas maksimal 12 jam sehari menurut aturan pemerintah." #Player
-    -> respon_jam_kerja
-
-=== respon_jam_kerja ===
-Buruh: "Iya, memang harusnya ada pembatasan seperti itu, Mas." #NPC
--> diskusi_apd
-
-=== diskusi_apd ===
-+ [Komentari rompi: "Sampai rompinya robek..."]
-    Pemain: "Tapi Bapak malah kerja sampai lebih dari 12 jam, lihat itu rompinya sampai robek (orbek) begitu." #Player
-    -> kondisi_rompi
-+ [Tanya: "Rompinya kenapa, Pak?"]
-    Pemain: "Itu rompinya sobek karena kerja lembur terus, Pak?" #Player
-    -> kondisi_rompi
-
-=== kondisi_rompi ===
-Buruh: "Oh, ini udah lama, Mas. Sudah dari bulan lalu. Kurang nyaman juga jadinya." #NPC
-
-+ [Tanya soal tanggung jawab pabrik]
-    Pemain: "Dari pihak pabrik, ngga ada yang ngurus APD-nya atau bagaimana? Kok dibiarkan rusak?" #Player
-    -> penjelasan_apd
-+ [Beri tahu aturan APD]
-    Pemain: "Pihak pabrik harusnya bertanggung jawab atas kondisi rompi Bapak itu." #Player
-    -> penjelasan_apd
-
-=== penjelasan_apd ===
+=== bahasan_jam_kerja ===
+Pemain: "Dari kemarin malam? Kerja lebih dari 12 jam? Peraturan perusahaan memang seperti itu atau gimana, Pak?" #Player
+Buruh: "Iya, kalau ngga nambah jam kerja, nanti bisa kehilangan kerjaan, Mas. Sebenarnya banyak juga yang senasib kerja dari kemarin malam." #NPC
+Pemain: "Waduh, memang tidak ada pembatasan jam kerja, Pak?" #Player
 Buruh: "Saya bingung juga, Mas. Itu udah keputusan dari sananya." #NPC
-
-+ [Kutip aturan Permenakertrans No. 8/2010]
-    Pemain: "Soalnya, dalam Permenakertrans No. 8 Tahun 2010, pengusaha wajib melaksanakan manajemen APD." #Player
-    Pemain: "Mereka harus merawat, mengecek, bahkan menghancurkan APD yang tidak layak guna untuk diganti yang baru." #Player
-    -> respon_akhir
-+ [Tekankan kewajiban pengusaha]
-    Pemain: "Aturannya jelas Pak, pengusaha wajib mengecek dan mengganti APD yang sudah tidak layak pakai seperti rompi Bapak ini." #Player
-    -> respon_akhir
-
-=== respon_akhir ===
+Pemain: "Soalnya ada peraturan pemerintah, Pak. Dalam PP Nomor 35 Tahun 2021, maksimal itu 8 jam sehari dan lembur maksimal 4 jam. Jadi totalnya maksimal 12 jam sehari." #Player
 Buruh: "Iya, memang harusnya ada pembatasan seperti itu, Mas. Biar tetep aman dan kerasa nyaman kalau dipakai kerja lama." #NPC
-Buruh: "Saya setuju saja dengan peraturan itu. Harusnya juga seperti itu. Kalau peraturan dilanggar, ya jadinya ya seperti ini, mas." #NPC
+-> penutup
 
-+ [Selesaikan pembicaraan: Fokus Hukum]
-    Pemain: "Betul, Pak. Perlu ada penegakan hukum yang kuat agar pekerja tidak dirugikan. Silakan dinikmati makanannya." #Player
-    -> END
-+ [Selesaikan pembicaraan: Fokus Istirahat]
-    Pemain: "Iya, Pak. Yang penting sekarang Bapak istirahat dulu dan nikmati makannya sampai kenyang." #Player
+=== bahasan_apd ===
+Pemain: "Tapi Bapak malah kerja lebih dari 12 jam sampai rompinya robek begitu." #Player
+Buruh: "Oh, ini udah lama, Mas. Sudah dari bulan lalu. Kurang nyaman juga jadinya." #NPC
+Pemain: "Dari pihak pabrik, ngga ada yang ngurus APD-nya atau bagaimana?" #Player
+Buruh: "Saya bingung juga, Mas. Itu udah keputusan dari sananya." #NPC
+Pemain: "Padahal di Permenakertrans No. 8 Tahun 2010 tentang APD, pengusaha wajib melaksanakan manajemen APD. Mulai dari merawat, mengecek, sampai menghancurkan APD yang sudah tidak layak guna." #Player
+-> penutup
+
+=== penutup ===
+Buruh: "Saya setuju saja dengan peraturan itu. Harusnya juga seperti itu. Kalau peraturan dilanggar, ya jadinya ya seperti ini, Mas." #NPC
+
++ [Balas: "Perlu penegakan hukum"]
+    Pemain: "Iya, Pak. Perlu ada penegakan hukum yang kuat. Silakan istirahat dulu dan nikmati makanannya, Pak." #Player
     -> END
