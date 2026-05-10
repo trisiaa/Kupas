@@ -23,6 +23,7 @@ public class ChatController : MonoBehaviour
     public GameObject narrativePrefab; 
     public GameObject choiceButtonPrefab;
     public GameObject finishButton;
+    public GameObject imageBubblePrefab;
 
     [Header("Appearance Settings")]
     public float delayBetweenBubbles = 1.0f; 
@@ -59,32 +60,37 @@ public class ChatController : MonoBehaviour
         {
             string text = story.Continue().Trim();
             List<string> tags = story.currentTags;
-            
-            string type = "NPC"; 
-            if (tags.Contains("Player")) type = "Player";
-            else if (tags.Contains("Narrative")) type = "Narrative";
-            
-            CreateFullBubble(text, type);
 
-            // --- SFX SAAT BUBBLE MUNCUL ---
-            if (AudioManager.instance != null) {
-                AudioManager.instance.PlaySFX(AudioManager.instance.dialogue);
+            // 1. CEK APAKAH ADA TAG GAMBAR
+            string imgName = "";
+            foreach (string tag in tags) {
+                if (tag.StartsWith("img_bubble:")) {
+                    imgName = tag.Split(':')[1].Trim();
+                }
+            }
+
+            // 2. JIKA ADA GAMBAR, MUNCULKAN BUBBLE GAMBAR DULU
+            if (!string.IsNullOrEmpty(imgName)) {
+                CreateImageBubble(imgName);
+                yield return new WaitForSeconds(delayBetweenBubbles);
+            }
+
+            // 3. JIKA ADA TEKS (BUKAN CUMA GAMBAR), MUNCULKAN BUBBLE TEKS
+            if (!string.IsNullOrEmpty(text)) {
+                string type = "NPC"; 
+                if (tags.Contains("Player")) type = "Player";
+                else if (tags.Contains("Narrative")) type = "Narrative";
+                
+                CreateFullBubble(text, type);
+                yield return new WaitForSeconds(delayBetweenBubbles);
             }
 
             Canvas.ForceUpdateCanvases();
             scrollRect.verticalNormalizedPosition = 0f;
-
-            yield return new WaitForSeconds(delayBetweenBubbles);
         }
 
-        if (story.currentChoices.Count > 0) 
-        {
-            ShowChoices();
-        } 
-        else if (!story.canContinue) 
-        {
-            finishButton.SetActive(true); 
-        }
+        if (story.currentChoices.Count > 0) ShowChoices();
+        else if (!story.canContinue) finishButton.SetActive(true);
 
         displayCoroutine = null;
     }
@@ -104,6 +110,18 @@ public class ChatController : MonoBehaviour
         
         textComponent.text = cleanText;
     }
+
+        // 4. FUNGSI BARU UNTUK SPAWN BUBBLE GAMBAR
+    void CreateImageBubble(string fileName) 
+    {
+        GameObject instance = Instantiate(imageBubblePrefab, chatContent);
+        // Cari komponen Image di dalam prefab (bisa di anak/child-nya)
+        Image imgComponent = instance.GetComponentInChildren<Image>();
+        
+        Sprite loadedSprite = Resources.Load<Sprite>("Bukti/" + fileName);
+        if (loadedSprite != null) {
+            imgComponent.sprite = loadedSprite;
+        }
 
     void ShowChoices() 
     {
@@ -125,6 +143,7 @@ public class ChatController : MonoBehaviour
             });
         }
     }
+}
 
     public void OnFinishClicked() 
 {

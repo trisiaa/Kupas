@@ -12,9 +12,16 @@ public class SceneController : MonoBehaviour
     public bool useTimer = false;
     public float delayInSeconds = 5f;
 
+    [Header("Skip Settings")]
+    public bool canSkip = true;
+    public GameObject skipButton;
+    public float skipButtonDelay = 2f; 
+
     [Header("Tutorial Settings")]
     public GameObject tutorialPanel;
     private bool isTutorialOpen = false;
+
+    private Coroutine timerCoroutine;
 
     void Start()
     {
@@ -25,25 +32,53 @@ public class SceneController : MonoBehaviour
             tutorialPanel.SetActive(false);
         }
 
+        if (skipButton != null)
+        {
+            skipButton.SetActive(false);
+            if (canSkip)
+            {
+                StartCoroutine(ShowSkipButtonAfterDelay());
+            }
+        }
+
         if (useTimer)
         {
-            StartCoroutine(WaitAndChangeScene());
+            timerCoroutine = StartCoroutine(WaitAndChangeScene());
         }
     }
 
-    // Fungsi pembantu untuk memutar suara agar kode lebih bersih
+    IEnumerator ShowSkipButtonAfterDelay()
+    {
+        yield return new WaitForSeconds(skipButtonDelay);
+        if (skipButton != null)
+        {
+            skipButton.SetActive(true);
+        }
+    }
+
+    public void SkipScene()
+    {
+        if (canSkip)
+        {
+            if (timerCoroutine != null)
+            {
+                StopCoroutine(timerCoroutine);
+            }
+            LoadNextScene();
+        }
+    }
+
     private void PlayButtonSound()
     {
         if (AudioManager.instance != null)
         {
-            // Mengambil AudioClip 'buttons' dari AudioManager
             AudioManager.instance.PlaySFX(AudioManager.instance.buttons);
         }
     }
 
     public void OpenTutorial()
     {
-        PlayButtonSound(); // <--- Play SFX
+        PlayButtonSound();
         if (tutorialPanel != null)
         {
             tutorialPanel.SetActive(true);
@@ -54,7 +89,7 @@ public class SceneController : MonoBehaviour
 
     public void CloseTutorial()
     {
-        PlayButtonSound(); // <--- Play SFX
+        PlayButtonSound();
         if (tutorialPanel != null)
         {
             tutorialPanel.SetActive(false);
@@ -63,44 +98,50 @@ public class SceneController : MonoBehaviour
         }
     }
 
-    // 1. Fungsi untuk memutar suara default 'buttons' yang ada di AudioManager
-    public void PlayDefaultButtonSFX()
-    {
-        if (AudioManager.instance != null)
-        {
-            AudioManager.instance.PlaySFX(AudioManager.instance.buttons);
-        }
-    }
-
-    // 2. Fungsi yang lebih fleksibel: Kamu bisa memasukkan AudioClip apa saja langsung dari Inspector
-    public void PlayCustomSFX(AudioClip clip)
-    {
-        if (AudioManager.instance != null && clip != null)
-        {
-            AudioManager.instance.PlaySFX(clip);
-        }
-    }
+    // --- UPDATED NAVIGATION METHODS TO USE TRANSITION INSTANCE ---
 
     public void RestartScene()
     {
-        PlayButtonSound(); // <--- Play SFX
-        Time.timeScale = 1f; 
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        PlayButtonSound();
+        Time.timeScale = 1f;
+        string currentScene = SceneManager.GetActiveScene().name;
+
+        // Check if the Transition Manager exists, otherwise load normally
+        if (SceneTransitionManager.Instance != null)
+            SceneTransitionManager.Instance.NextLevel(currentScene);
+        else
+            SceneManager.LoadScene(currentScene);
     }
 
     public void BackToMainMenu()
     {
-        PlayButtonSound(); // <--- Play SFX
+        PlayButtonSound();
         Time.timeScale = 1f;
         if (!string.IsNullOrEmpty(mainMenuSceneName))
         {
-            SceneManager.LoadScene(mainMenuSceneName);
+            if (SceneTransitionManager.Instance != null)
+                SceneTransitionManager.Instance.NextLevel(mainMenuSceneName);
+            else
+                SceneManager.LoadScene(mainMenuSceneName);
+        }
+    }
+
+    public void LoadNextScene()
+    {
+        PlayButtonSound();
+        Time.timeScale = 1f;
+        if (!string.IsNullOrEmpty(nextSceneName))
+        {
+            if (SceneTransitionManager.Instance != null)
+                SceneTransitionManager.Instance.NextLevel(nextSceneName);
+            else
+                SceneManager.LoadScene(nextSceneName);
         }
     }
 
     public void QuitGame()
     {
-        PlayButtonSound(); // <--- Play SFX
+        PlayButtonSound();
         #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
         #else
@@ -108,20 +149,9 @@ public class SceneController : MonoBehaviour
         #endif
     }
 
-    public void LoadNextScene()
-    {
-        PlayButtonSound(); // <--- Play SFX
-        Time.timeScale = 1f;
-        if (!string.IsNullOrEmpty(nextSceneName))
-        {
-            SceneManager.LoadScene(nextSceneName);
-        }
-    }
-
     IEnumerator WaitAndChangeScene()
     {
         yield return new WaitForSeconds(delayInSeconds);
-        // LoadNextScene() sudah memanggil PlayButtonSound() di atas
         LoadNextScene();
     }
 }

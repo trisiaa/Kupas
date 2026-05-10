@@ -16,7 +16,6 @@ public class LevelSelection : MonoBehaviour
 
     void Start()
     {
-
         if (!PlayerPrefs.HasKey("levelTerbuka"))
         {
             PlayerPrefs.SetInt("levelTerbuka", 1);
@@ -28,11 +27,9 @@ public class LevelSelection : MonoBehaviour
         {
             bool isUnlocked = lvl.levelIndex <= levelTerbuka;
 
-         
             if (lvl.lockImage != null)
                 lvl.lockImage.SetActive(!isUnlocked);
 
-        
             if (lvl.button != null)
                 lvl.button.interactable = isUnlocked;
         }
@@ -40,44 +37,58 @@ public class LevelSelection : MonoBehaviour
 
     public void PilihLevel(int level)
     {
-    int levelTerbuka = PlayerPrefs.GetInt("levelTerbuka", 1);
+        int levelTerbuka = PlayerPrefs.GetInt("levelTerbuka", 1);
 
-    if (level > levelTerbuka)
-    {
-        Debug.Log("Level masih terkunci!");
-        return;
-    }
+        if (level > levelTerbuka)
+        {
+            Debug.Log("Level masih terkunci!");
+            return;
+        }
 
-    // Simpan level yang dipilih agar scene 'ingame' tahu harus load data apa
-    PlayerPrefs.SetInt("levelDipilih", level);
+        // 1. Play sound and save choice
+        PlayButtonSound();
+        PlayerPrefs.SetInt("levelDipilih", level);
 
-    // LOGIKA BARU: Cek apakah level ini butuh scene pembuka?
-    if (level == 1) // Contoh: Level 5 punya cerita pembuka
-    {
-        SceneManager.LoadScene("CutsceneIntro");
-    }
-    else
-    {
-        // Level normal langsung ke gameplay
-        SceneManager.LoadScene("ingame");
-    }
+        // 2. Decide which scene to load
+        string targetScene = (level == 1) ? "CutsceneIntro" : "ingame";
+
+        // 3. Call the Transition Manager via Instance
+        if (SceneTransitionManager.Instance != null)
+        {
+            SceneTransitionManager.Instance.NextLevel(targetScene);
+        }
+        else
+        {
+            // Fallback if manager is missing
+            SceneManager.LoadScene(targetScene);
+        }
     }
 
     public void ResetProgress()
-{
-    PlayerPrefs.DeleteAll(); // hapus semua progress
-    PlayerPrefs.SetInt("levelTerbuka", 1); // set ulang ke level 1
+    {
+        PlayButtonSound();
+        PlayerPrefs.DeleteAll(); 
+        PlayerPrefs.SetInt("levelTerbuka", 1); 
+        
+        Debug.Log("Progress di-reset!");
 
-    Debug.Log("Progress di-reset!");
+        string currentScene = SceneManager.GetActiveScene().name;
 
-    SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-}
+        // Call the Transition Manager via Instance
+        if (SceneTransitionManager.Instance != null)
+        {
+            SceneTransitionManager.Instance.NextLevel(currentScene);
+        }
+        else
+        {
+            SceneManager.LoadScene(currentScene);
+        }
+    }
 
     private void PlayButtonSound()
     {
         if (AudioManager.instance != null)
         {
-            // Mengambil AudioClip 'buttons' dari AudioManager
             AudioManager.instance.PlaySFX(AudioManager.instance.buttons);
         }
     }

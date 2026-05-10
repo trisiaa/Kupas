@@ -102,6 +102,9 @@ public class ControlGameMasak : MonoBehaviour
     [Header("UI PAUSE")]
     public GameObject panelPause;
 
+    [Header("UI SETTING")]
+    public GameObject panelSetting;
+
     [Header("LEVEL SYSTEM")]
     public int level = 1;
 
@@ -831,6 +834,36 @@ int slot = jalurNPC[i];
     if (panelPause != null)
     {
         panelPause.SetActive(true); 
+    }
+}
+
+public void ButtonSetting()
+{
+    if (AudioManager.instance != null)
+    {
+        AudioManager.instance.PlaySFX(AudioManager.instance.buttons);
+    }
+
+    Time.timeScale = 0f; 
+
+    if (panelSetting != null)
+    {
+        panelSetting.SetActive(true); 
+    }
+}
+
+public void ButtonKembali()
+{
+    if (AudioManager.instance != null)
+    {
+        AudioManager.instance.PlaySFX(AudioManager.instance.buttons);
+    }
+
+    Time.timeScale = 1f; 
+
+    if (panelSetting != null)
+    {
+        panelSetting.SetActive(false); 
     }
 }
 

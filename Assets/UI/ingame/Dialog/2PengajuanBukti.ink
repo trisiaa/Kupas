@@ -15,11 +15,13 @@ Boss: "Kejanggalan anggaran? Itu tuduhan serius. Apa kamu punya bukti otentik so
 
 === pilihan_bukti_anggaran ===
 + [Bukti: CASE PAK BENI: "KEKERASAN PEKERJA" ]
+    Memberikan bukti percakapan dengan Pak Beni. #Narrative
     Pemain: "Ini bukti yang saya dapatkan dari lapangan, Bos." #Player
     Boss: "Apa ini? Aku tidak paham maksudmu. Dokumen anggaran yang aku minta!" #NPC
     -> pilihan_bukti_anggaran
 
 + [Bukti: CASE PAK ANTON: "BUKTI ANGGARAN" ]
+    Memberikan bukti dokumen anggaran dari Pak Anton. #Narrative
     Pemain: "Saya bertemu seorang akuntan yang merasa bersalah karena tidak bisa menjaga alam Morowali. Dia memberikan dokumen rahasia ini kepada saya yang berisi bukti kejahatan anggaran perusahaan." #Player
     Boss: "Kalau dokumen ini asli, berarti mereka memang sengaja mengabaikan regulasi lingkungan demi keuntungan. Apa ada temuan lain?" #NPC
     -> investigasi_gaya_hidup
@@ -36,11 +38,13 @@ Boss: "Ah, masa bisa sampai seperti itu? Itu kan korupsi terang terangan. Kamu a
 
 === pilihan_bukti_mobil ===
 + [Bukti: CASE IBU DENIS: "BUKTI ANGGARAN" ]
+    Memberikan bukti dokumen dari informasi Ibu Denis. #Narrative
     Pemain: "Ini datanya, Bos. Terverifikasi atas nama perusahaan namun digunakan untuk pribadi." #Player
     Boss: "Wow, mobilku saja tidak sebagus ini. Tapi kenapa para buruh tidak ada yang melapor? Apa buruh diam saja?" #NPC
     -> kondisi_buruh
 
 + [Bukti: CASE PAK JUAN: "OVERWORKED/APD" ]
+    Memberikan bukti foto APD rusak dari Pak Juan. #Narrative
     Pemain: "Ini foto APD yang rusak, Bos." #Player
     Boss: "Apa ini? Aku tidak paham maksudmu. Fokus ke masalah gaya hidup mewah mereka dulu!" #NPC
     -> pilihan_bukti_mobil
@@ -52,7 +56,7 @@ Boss: "Ah, masa bisa sampai seperti itu? Itu kan korupsi terang terangan. Kamu a
 
 === penyerahan_rekaman ===
 * [Berikan rekaman suara Kasus Kekerasan Pekerja]
-    Pemain memberikan rekaman suara kepada Bos. #Narrative
+    Pemain memberikan rekaman suara dari kasus Pak Beni kepada Bos. #Narrative
     Pemain: "Ada praktik union busting; mereka yang menjilat dan membela atasan diberikan bonus, sedangkan yang bekerja sesuai prosedur tapi kritis justru diperas habis-habisan." #Player
     -> kesimpulan_bos
 
