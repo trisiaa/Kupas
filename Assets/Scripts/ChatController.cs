@@ -175,26 +175,42 @@ public class ChatController : MonoBehaviour
     }
 
     public void OnFinishClicked() 
+{
+    if (AudioManager.instance != null)
+        AudioManager.instance.PlaySFX(AudioManager.instance.buttons);
+
+    if (levelCompletePanel != null) 
+        levelCompletePanel.SetActive(true);
+
+    if (AudioManager.instance != null)
+        AudioManager.instance.PlaySFX(AudioManager.instance.gameComplete);
+
+    if (chatCanvasGroup != null) 
     {
-        if (AudioManager.instance != null)
-            AudioManager.instance.PlaySFX(AudioManager.instance.buttons);
-
-        if (levelCompletePanel != null) 
-            levelCompletePanel.SetActive(true);
-
-        if (AudioManager.instance != null)
-            AudioManager.instance.PlaySFX(AudioManager.instance.gameComplete);
-
-        if (chatCanvasGroup != null) 
-        {
-            chatCanvasGroup.interactable = false;
-            chatCanvasGroup.blocksRaycasts = false;
-        }
-
-        int levelTerbuka = PlayerPrefs.GetInt("levelTerbuka", 1);
-        if (levelTerbuka < 7) {
-            levelTerbuka++;
-            PlayerPrefs.SetInt("levelTerbuka", levelTerbuka);
-        }
+        chatCanvasGroup.interactable = false;
+        chatCanvasGroup.blocksRaycasts = false;
     }
+
+    int levelDipilih = PlayerPrefs.GetInt("levelDipilih", 1);
+
+    Debug.Log("Finish levelDipilih: " + levelDipilih);
+
+    int levelTerbuka = PlayerPrefs.GetInt("levelTerbuka", 1);
+
+    int maxLevel = 7;
+
+    // hanya unlock level berikutnya
+    if (levelDipilih == levelTerbuka && levelTerbuka < maxLevel)
+    {
+        levelTerbuka++;
+
+        PlayerPrefs.SetInt("levelTerbuka", levelTerbuka);
+
+        Debug.Log("Unlock level: " + levelTerbuka);
+    }
+    else
+    {
+        Debug.Log("Replay level - tidak unlock");
+    }
+}
 }

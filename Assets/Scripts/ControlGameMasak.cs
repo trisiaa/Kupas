@@ -142,11 +142,11 @@ public class ControlGameMasak : MonoBehaviour
     private RectTransform makananRect;
     private Vector2 posisiAwal;
 
-    int indexMakananAktif = -1;
+    GameObject npcMakananAktif;
 
     void Start()
     {
-        level = PlayerPrefs.GetInt("levelDipilih", 1);
+        level = PlayerPrefs.GetInt("gameLevel", 1);
         UpdateButtonByLevel();
         UpdateUILevel();
         SetTotalPembeliByLevel();
@@ -318,7 +318,11 @@ void UpdateUILevel()
         for (int i = 0; i < 2; i++)
         {
             if (!isTimerActive[i]) continue;
-            if (npcSlot[i] == null) continue;
+            if (npcSlot[i] == null || !npcSlot[i].activeInHierarchy)
+{
+    isTimerActive[i] = false;
+    continue;
+}
 
             currentTime[i] -= Time.deltaTime;
 
@@ -404,68 +408,73 @@ if (currentTime[i] <= maxTime * 0.5f && !sudahMarah[i])
         }
     }
 
-    IEnumerator TungguMakananSampai()
+    IEnumerator TungguMakananSampai(GameObject npcTarget)
+{
+    while (isStartMoveMakanan)
     {
-        while (isStartMoveMakanan)
-        {
-            yield return null;
-        }
-
-        if (indexMakananAktif >= 0 && indexMakananAktif < npcAktif.Count)
-        {
-            Transform menu = npcAktif[indexMakananAktif].transform.Find("Menu");
-            Transform marah = npcAktif[indexMakananAktif].transform.Find("npc marah");
-if (marah != null)
-{
-    marah.gameObject.SetActive(false);
-}
-
-if (npcAktif[indexMakananAktif] == currentSpecialNPC)
-{
-    // SPECIAL → JANGAN MATIKAN MENU
-}
-else
-{
-    // NPC BIASA → MATIKAN MENU
-    if (menu != null)
-        menu.gameObject.SetActive(false);
-}
-
-            ResetMakananKeAwal();
-
-            yield return new WaitForSeconds(0.2f);
-
-            jumlahDilayani++;
-            
-            if (npcAktif[indexMakananAktif] == currentSpecialNPC)
-{
-    isSpecialServed = true;
-
-    ShowDialogSpecial();
-
-    yield break; 
-}
-else
-{
-    sudahPergi[indexMakananAktif] = true;
-}
-
-            int slot = jalurNPC[indexMakananAktif];
-            if (slot < 2)
-            {
-                isTimerActive[slot] = false;
-            }
-
-            Animator anim = npcAktif[indexMakananAktif].GetComponent<Animator>();
-            if (anim != null)
-            {
-                anim.SetBool("isJalan", true);
-            }
-        }
-
-        indexMakananAktif = -1;
-
+        yield return null;
     }
+
+    if (npcTarget == null)
+        yield break;
+
+    int index = npcAktif.IndexOf(npcTarget);
+
+    if (index == -1)
+        yield break;
+
+    Transform menu = npcTarget.transform.Find("Menu");
+    Transform marah = npcTarget.transform.Find("npc marah");
+
+    if (marah != null)
+    {
+        marah.gameObject.SetActive(false);
+    }
+
+    if (npcTarget == currentSpecialNPC)
+    {
+        // SPECIAL → JANGAN MATIKAN MENU
+    }
+    else
+    {
+        // NPC BIASA → MATIKAN MENU
+        if (menu != null)
+            menu.gameObject.SetActive(false);
+    }
+
+    ResetMakananKeAwal();
+
+    yield return new WaitForSeconds(0.2f);
+
+    jumlahDilayani++;
+
+    if (npcTarget == currentSpecialNPC)
+    {
+        isSpecialServed = true;
+
+        ShowDialogSpecial();
+
+        yield break;
+    }
+    else
+    {
+        sudahPergi[index] = true;
+    }
+
+    int slot = jalurNPC[index];
+
+    if (slot < 2)
+    {
+        isTimerActive[slot] = false;
+    }
+
+    Animator anim = npcTarget.GetComponent<Animator>();
+
+    if (anim != null)
+    {
+        anim.SetBool("isJalan", true);
+    }
+}
 
     void SpawnPembeli()
     {
@@ -964,8 +973,8 @@ if (slot < 2)
     isTimerActive[slot] = false; 
 }
 
-                indexMakananAktif = i;
-                StartCoroutine(TungguMakananSampai());
+                npcMakananAktif = npcAktif[i];
+                StartCoroutine(TungguMakananSampai(npcMakananAktif));
 
                 if (i < pesanMakanan.Count)
                     pesanMakanan.RemoveAt(i);

@@ -17,15 +17,17 @@ public class SceneController : MonoBehaviour
     public GameObject skipButton;
     public float skipButtonDelay = 2f; 
 
+    [Header("Level Info")]
+    public int levelIndex = 0;
+
     [Header("Tutorial Settings")]
     public GameObject tutorialPanel;
     private bool isTutorialOpen = false;
 
     private Coroutine timerCoroutine;
 
-    void Start()
+    void Awake()
     {
-        Time.timeScale = 1f;
 
         if (tutorialPanel != null)
         {
@@ -127,18 +129,26 @@ public class SceneController : MonoBehaviour
     }
 
     public void LoadNextScene()
+{
+    PlayButtonSound();
+    Time.timeScale = 1f;
+
+    // simpan level yang dimainkan
+    if (levelIndex > 0)
     {
-        PlayButtonSound();
-        Time.timeScale = 1f;
-        if (!string.IsNullOrEmpty(nextSceneName))
-        {
-            if (SceneTransitionManager.Instance != null)
-                SceneTransitionManager.Instance.NextLevel(nextSceneName);
-            else
-                SceneManager.LoadScene(nextSceneName);
-        }
+        PlayerPrefs.SetInt("levelDipilih", levelIndex);
+
+        Debug.Log("Set levelDipilih: " + levelIndex);
     }
 
+    if (!string.IsNullOrEmpty(nextSceneName))
+    {
+        if (SceneTransitionManager.Instance != null)
+            SceneTransitionManager.Instance.NextLevel(nextSceneName);
+        else
+            SceneManager.LoadScene(nextSceneName);
+    }
+}
     public void QuitGame()
     {
         PlayButtonSound();
