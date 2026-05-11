@@ -17,6 +17,8 @@ Bos: "Sanitasi? Bukannya sanitasi prabrik sudah diperbaiki sejak tahun lalu? Kam
 === pilihan_bukti_pengadilan_pertama ===
 // Pilihan ganda untuk menentukan arah pembicaraan
 + [Bukti: CASE PAK ADAM: "KEBERSIHAN" ]
+    #img_bubble: foto_adam
+    #img_bubble: foto_rekaman
     Memberikan bukti rekaman suara percakapan dengan Pak Adam. #Narrative
     Pemain: "Ini pak bukti yang bapak minta." #Player
     Pemain: "Tadi ada yang mengeluh gatal-gatal parah karena sanitasi pabrik yang kacau, katanya sampai ada bangkai tikus seminggu yang tidak dibersihkan." #Player
@@ -25,6 +27,7 @@ Bos: "Sanitasi? Bukannya sanitasi prabrik sudah diperbaiki sejak tahun lalu? Kam
     -> lanjutan_bukti_pengadilan_pertama
 
 + [Bukti: CASE IBU DENIS: "KORUPSI" ]
+    #img_bubble: foto_mobil
     Memberikan bukti foto mobil. #Narrative
     Pemain: "Ini pak bukti yang bapak minta." #Player
     Bos: "Apa ini? Bukan ini yang aku maksud!" #NPC
@@ -32,6 +35,8 @@ Bos: "Sanitasi? Bukannya sanitasi prabrik sudah diperbaiki sejak tahun lalu? Kam
 
 === lanjutan_bukti_pengadilan_pertama ===
 * [Lanjutkan investigasi]
+#img_bubble: foto_juan
+#img_bubble: foto_rekaman
 Pemain memberikan rekaman percakapan dengan Pak Juan. #Narrative
 -> percakapan_lanjutan
 
@@ -51,11 +56,8 @@ Bos: "Harusnya perusahaan sudah mengikuti peraturan yang ada." #NPC
 === percakapan_resolusi ===
 + [Balas: "Saya belum tahu..."]
 Pemain: "Saya belum tahu penyebab kurangnya pemeliharaan fasilitas buruh itu, Bos." #Player
-
 Bos: "Begini saja, saya belum bisa ambil kesimpulan cuma dari cerita ini. Kamu coba telusuri lagi pelan-pelan. " #NPC
-
 Bos: "Hmmm. " #NPC
-
 Bos: "Coba cari informasi lebih detail lagi langsung dari buruh-buruh itu saat mereka datang ke warung! Kita perlu tahu apa sumber masalah dari semua ini." #NPC
 -> penutup
 

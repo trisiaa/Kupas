@@ -7,7 +7,6 @@ using System.Collections;
 
 public class ChatController : MonoBehaviour 
 {
-    // ... (Variabel Header tetap sama seperti kode aslimu) ...
     [Header("Ink Configuration")]
     public TextAsset inkJSON;
     private Story story;
@@ -23,7 +22,7 @@ public class ChatController : MonoBehaviour
     public GameObject narrativePrefab; 
     public GameObject choiceButtonPrefab;
     public GameObject finishButton;
-    public GameObject imageBubblePrefab;
+    public GameObject imageBubblePrefab; // Prefab untuk bubble gambar
 
     [Header("Appearance Settings")]
     public float delayBetweenBubbles = 1.0f; 
@@ -52,6 +51,7 @@ public class ChatController : MonoBehaviour
 
     IEnumerator DisplayNextLines() 
     {
+        // Bersihkan pilihan lama
         foreach (Transform child in choiceGroup.transform) Destroy(child.gameObject);
         choiceGroup.SetActive(false);
         finishButton.SetActive(false);
@@ -61,7 +61,7 @@ public class ChatController : MonoBehaviour
             string text = story.Continue().Trim();
             List<string> tags = story.currentTags;
 
-            // 1. CEK APAKAH ADA TAG GAMBAR
+            // 1. DETEKSI TAG GAMBAR
             string imgName = "";
             foreach (string tag in tags) {
                 if (tag.StartsWith("img_bubble:")) {
@@ -69,28 +69,43 @@ public class ChatController : MonoBehaviour
                 }
             }
 
-            // 2. JIKA ADA GAMBAR, MUNCULKAN BUBBLE GAMBAR DULU
+            // 2. MUNCULKAN BUBBLE GAMBAR (Dulu jika ada tag-nya)
             if (!string.IsNullOrEmpty(imgName)) {
                 CreateImageBubble(imgName);
                 yield return new WaitForSeconds(delayBetweenBubbles);
+                
+                // Scroll otomatis setelah gambar masuk
+                ScrollToBottom();
             }
 
-            // 3. JIKA ADA TEKS (BUKAN CUMA GAMBAR), MUNCULKAN BUBBLE TEKS
+            // 3. MUNCULKAN BUBBLE TEKS (Jika baris tersebut ada teksnya)
             if (!string.IsNullOrEmpty(text)) {
                 string type = "NPC"; 
                 if (tags.Contains("Player")) type = "Player";
                 else if (tags.Contains("Narrative")) type = "Narrative";
                 
                 CreateFullBubble(text, type);
-                yield return new WaitForSeconds(delayBetweenBubbles);
-            }
 
-            Canvas.ForceUpdateCanvases();
-            scrollRect.verticalNormalizedPosition = 0f;
+                if (AudioManager.instance != null) {
+                    AudioManager.instance.PlaySFX(AudioManager.instance.dialogue);
+                }
+
+                yield return new WaitForSeconds(delayBetweenBubbles);
+                
+                // Scroll otomatis setelah teks masuk
+                ScrollToBottom();
+            }
         }
 
-        if (story.currentChoices.Count > 0) ShowChoices();
-        else if (!story.canContinue) finishButton.SetActive(true);
+        // Tampilkan pilihan jika ada
+        if (story.currentChoices.Count > 0) 
+        {
+            ShowChoices();
+        } 
+        else if (!story.canContinue) 
+        {
+            finishButton.SetActive(true); 
+        }
 
         displayCoroutine = null;
     }
@@ -111,17 +126,26 @@ public class ChatController : MonoBehaviour
         textComponent.text = cleanText;
     }
 
-        // 4. FUNGSI BARU UNTUK SPAWN BUBBLE GAMBAR
     void CreateImageBubble(string fileName) 
     {
+        if (imageBubblePrefab == null) return;
+
         GameObject instance = Instantiate(imageBubblePrefab, chatContent);
-        // Cari komponen Image di dalam prefab (bisa di anak/child-nya)
+        
+        // Mengambil komponen Image di dalam prefab
         Image imgComponent = instance.GetComponentInChildren<Image>();
         
         Sprite loadedSprite = Resources.Load<Sprite>("Bukti/" + fileName);
         if (loadedSprite != null) {
             imgComponent.sprite = loadedSprite;
+            
+            // AGAR TIDAK STRETCH:
+            imgComponent.preserveAspect = true; 
         }
+        else {
+            Debug.LogError("File gambar tidak ditemukan di Resources/Bukti/" + fileName);
+        }
+    }
 
     void ShowChoices() 
     {
@@ -133,7 +157,6 @@ public class ChatController : MonoBehaviour
             
             buttonObj.GetComponent<Button>().onClick.AddListener(() => 
             {
-                // --- SFX SAAT TOMBOL PILIHAN DI-KLIK ---
                 if (AudioManager.instance != null) {
                     AudioManager.instance.PlaySFX(AudioManager.instance.buttons);
                 }
@@ -142,43 +165,36 @@ public class ChatController : MonoBehaviour
                 RefreshView();
             });
         }
+        ScrollToBottom();
     }
-}
+
+    void ScrollToBottom()
+    {
+        Canvas.ForceUpdateCanvases();
+        scrollRect.verticalNormalizedPosition = 0f;
+    }
 
     public void OnFinishClicked() 
-{
-    // 🔊 SFX klik
-    if (AudioManager.instance != null)
-        AudioManager.instance.PlaySFX(AudioManager.instance.buttons);
-
-    if (levelCompletePanel != null) 
-        levelCompletePanel.SetActive(true);
-
-    if (AudioManager.instance != null)
     {
-        AudioManager.instance.PlaySFX(AudioManager.instance.gameComplete);
-    }
+        if (AudioManager.instance != null)
+            AudioManager.instance.PlaySFX(AudioManager.instance.buttons);
 
-    if (chatCanvasGroup != null) 
-    {
-        chatCanvasGroup.interactable = false;
-        chatCanvasGroup.blocksRaycasts = false;
-    }
+        if (levelCompletePanel != null) 
+            levelCompletePanel.SetActive(true);
 
-    int levelTerbuka = PlayerPrefs.GetInt("levelTerbuka", 1);
+        if (AudioManager.instance != null)
+            AudioManager.instance.PlaySFX(AudioManager.instance.gameComplete);
 
-    int maxLevel = 7;
+        if (chatCanvasGroup != null) 
+        {
+            chatCanvasGroup.interactable = false;
+            chatCanvasGroup.blocksRaycasts = false;
+        }
 
-    // hanya unlock kalau belum sampai max
-    if (levelTerbuka < maxLevel)
-    {
-        levelTerbuka++;
-        PlayerPrefs.SetInt("levelTerbuka", levelTerbuka);
-        Debug.Log("Unlock level: " + levelTerbuka);
+        int levelTerbuka = PlayerPrefs.GetInt("levelTerbuka", 1);
+        if (levelTerbuka < 7) {
+            levelTerbuka++;
+            PlayerPrefs.SetInt("levelTerbuka", levelTerbuka);
+        }
     }
-    else
-    {
-        Debug.Log("Semua level sudah terbuka!");
-    }
-}
 }

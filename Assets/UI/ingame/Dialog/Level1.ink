@@ -11,24 +11,29 @@ Buruh: "Eh, Mas. Kira-kira nasi bisa bikin gatal ngga, ya?" #NPC
     -> respon_buruh_soal_kebersihan
 
 === respon_buruh_soal_kebersihan ===
-Buruh: "Hmm, kalau gitu apa mungkin karena toilet dan ruang loker yang kotor, ya? Bahkan temanku bilang ada bangkai tikus yang tergeletak seminggu." #NPC
+Buruh: "Kalau begitu mungkin gara-gara toilet dan loker yang kotor." #NPC
+Buruh: "Temanku bilang ada bangkai tikus yang dibiarkan seminggu." #NPC
 
 + [Balas: "Waduh, kok bisa?"]
     Pemain: "Waduh, kok bisa sampai seperti itu?" #Player
     -> penjelasan_buruh_fasilitas
 
 === penjelasan_buruh_fasilitas ===
-Buruh: "Gatau, Mas. Semenjak 2 tahun lalu, tukang bersih-bersih semakin sedikit dan cuma ada di kantor pusat saja." #NPC
+Buruh: "Petugas kebersihan makin sedikit sejak dua tahun lalu." #NPC
+Pemain: "Loh tempat sebesar ini masa petugas kebersihan sedikit?" #Player
+Buruh: "Sekarang mereka cuma ada di kantor pusat." #NPC
 
 // Pilihan ganda untuk menentukan arah pembicaraan
 + [Balas: "Sudah lapor ke atasan?"]
     Pemain: "Sudah pernah lapor ke atasan, Pak?" #Player
-    Buruh: "Aduh, Mas. Kalau lapor lapor gitu saya takut. Ya sudah saya permisi dulu, ya." #NPC
+    Buruh: "Aduh, Mas. Kalau lapor lapor gitu saya takut." #NPC
+    Buruh: "Ya sudah saya permisi dulu, ya." #NPC
     -> penutup
 
 + [Balas: "Harusnya ada pembersih..."]
     Pemain: "Waduh, harusnya ada pembersih di tiap sektor." #Player
-    Buruh: "Iya, Mas. Harusnya memang seperti itu. Ya sudah saya permisi dulu, ya." #NPC
+    Buruh: "Iya, Mas. Harusnya memang seperti itu." #NPC
+    Buruh: "Ya sudah saya permisi dulu, ya." #NPC
     -> penutup
 
 === penutup ===
