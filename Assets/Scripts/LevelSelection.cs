@@ -5,12 +5,16 @@ using UnityEngine.UI;
 public class LevelSelection : MonoBehaviour
 {
     [System.Serializable]
-    public class LevelItem
-    {
-        public int levelIndex;        
-        public GameObject lockImage;  
-        public Button button;         
-    }
+public class LevelItem
+{
+    public int progressIndex; // urutan unlock
+    public int gameLevel;     // isi level di ingame
+
+    public string sceneName;
+
+    public GameObject lockImage;
+    public Button button;
+}
 
     public LevelItem[] levels;
 
@@ -25,56 +29,71 @@ public class LevelSelection : MonoBehaviour
 
         foreach (LevelItem lvl in levels)
         {
-            bool isUnlocked = lvl.levelIndex <= levelTerbuka;
+            bool isUnlocked = lvl.progressIndex <= levelTerbuka;
 
+            // tampilkan gembok
             if (lvl.lockImage != null)
                 lvl.lockImage.SetActive(!isUnlocked);
 
+            // aktif/nonaktif tombol
             if (lvl.button != null)
+            {
                 lvl.button.interactable = isUnlocked;
+
+                int progress = lvl.progressIndex;
+int gameLevel = lvl.gameLevel;
+string scene = lvl.sceneName;
+
+lvl.button.onClick.RemoveAllListeners();
+
+if (isUnlocked)
+{
+    lvl.button.onClick.AddListener(() =>
+        PilihLevel(progress, gameLevel, scene));
+}
+            }
         }
     }
 
-    public void PilihLevel(int level)
+    public void PilihLevel(int progressIndex, int gameLevel, string sceneName)
+{
+    int levelTerbuka = PlayerPrefs.GetInt("levelTerbuka", 1);
+
+    if (progressIndex > levelTerbuka)
     {
-        int levelTerbuka = PlayerPrefs.GetInt("levelTerbuka", 1);
-
-        if (level > levelTerbuka)
-        {
-            Debug.Log("Level masih terkunci!");
-            return;
-        }
-
-        // 1. Play sound and save choice
-        PlayButtonSound();
-        PlayerPrefs.SetInt("levelDipilih", level);
-
-        // 2. Decide which scene to load
-        string targetScene = (level == 1) ? "CutsceneIntro" : "ingame";
-
-        // 3. Call the Transition Manager via Instance
-        if (SceneTransitionManager.Instance != null)
-        {
-            SceneTransitionManager.Instance.NextLevel(targetScene);
-        }
-        else
-        {
-            // Fallback if manager is missing
-            SceneManager.LoadScene(targetScene);
-        }
+        Debug.Log("Level masih terkunci!");
+        return;
     }
+
+    PlayButtonSound();
+
+    PlayerPrefs.SetInt("levelDipilih", progressIndex);
+    PlayerPrefs.SetInt("gameLevel", gameLevel);
+    
+
+    Debug.Log("Progress level: " + progressIndex);
+
+    if (SceneTransitionManager.Instance != null)
+    {
+        SceneTransitionManager.Instance.NextLevel(sceneName);
+    }
+    else
+    {
+        SceneManager.LoadScene(sceneName);
+    }
+}
 
     public void ResetProgress()
     {
         PlayButtonSound();
-        PlayerPrefs.DeleteAll(); 
-        PlayerPrefs.SetInt("levelTerbuka", 1); 
-        
+
+        PlayerPrefs.DeleteAll();
+        PlayerPrefs.SetInt("levelTerbuka", 1);
+
         Debug.Log("Progress di-reset!");
 
         string currentScene = SceneManager.GetActiveScene().name;
 
-        // Call the Transition Manager via Instance
         if (SceneTransitionManager.Instance != null)
         {
             SceneTransitionManager.Instance.NextLevel(currentScene);
