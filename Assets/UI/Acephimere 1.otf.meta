@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: fbf202a5bbdc22a4d86901db00bf4d22
+guid: eb17713a16a06cd46817a204f1754461
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -10,7 +10,8 @@ TrueTypeFontImporter:
   includeFontData: 1
   fontNames:
   - Acephimere
-  fallbackFontReferences: []
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: efd6edca35d6d3c428ae6331ee0ccb4b, type: 3}
   customCharacters: 
   fontRenderingMode: 0
   ascentCalculationMode: 1
