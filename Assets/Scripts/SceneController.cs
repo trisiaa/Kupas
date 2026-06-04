@@ -70,7 +70,7 @@ public class SceneController : MonoBehaviour
         }
     }
 
-    private void PlayButtonSound()
+    public void PlayButtonSound()
     {
         if (AudioManager.instance != null)
         {

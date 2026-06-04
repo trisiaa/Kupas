@@ -6,13 +6,13 @@
 === percakapan_utama ===
 Buruh: "Waahhh, makanannya selalu keliatan enak, Mas. Porsinya juga mantap!" #NPC
 
-+ [Balas: "Hahaha, lumayan..."]
++ ["Hahaha, lumayan..."]
     Pemain: "Hahaha, lumayan buat nambah tenaga, Pak." #Player
     Buruh: "Iya, Mas. Udah beneran banting tulang ini." #NPC
     -> tanya_beban_kerja
 
 === tanya_beban_kerja ===
-+ [Balas: "Kelihatannya kok kerjanya.."]
++ ["Kelihatannya kok kerjanya.."]
     Pemain: "Kelihatannya kok kerjanya berat sekali, Pak?" #Player
     Buruh: "Iya, Mas. Saya kerja dari kemarin malam." #NPC
     Buruh: "Bayangkan secapek apa saya sekarang." #NPC
@@ -46,7 +46,7 @@ Pemain: "Perusahaan wajib melaksanakan manajemen APD." #Player
 -> penutup
 
 === bahasan_apd ===
-Pemain: "Kerja terus sampai rompinya sampai sobek gitu, Pak?" #Player
+Pemain: "Kerja terus sampai rompinya sobek gitu, Pak?" #Player
 Buruh: "Sudah lama, Mas. Sudah dari bulan lalu." #NPC
 Pemain: "Dari pihak pabrik, ngga ada yang ngurus APD-nya atau bagaimana?" #Player
 Buruh: "Katanya keputusan dari atas, jadi kami cuma pakai yang ada." #NPC

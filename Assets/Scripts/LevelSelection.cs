@@ -20,6 +20,16 @@ public class LevelItem
 
     void Start()
     {
+        if (!PlayerPrefs.HasKey("firstInstall"))
+            {
+                PlayerPrefs.DeleteAll();
+
+                PlayerPrefs.SetInt("levelTerbuka", 1);
+                PlayerPrefs.SetInt("firstInstall", 1);
+
+                PlayerPrefs.Save();
+            }
+
         if (!PlayerPrefs.HasKey("levelTerbuka"))
         {
             PlayerPrefs.SetInt("levelTerbuka", 1);

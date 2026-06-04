@@ -6,7 +6,7 @@
 === percakapan_utama ===
 Buruh: "Mas, maaf... bayarnya bisa minggu depan, tidak?" #NPC
 
-+ [Balas: "Oh, boleh, Bu..."]
++ ["Oh, boleh, Bu..."]
     Pemain: "Oh, boleh, Bu. Tidak apa-apa." #Player
     Buruh: "Soalnya anu..." #NPC
     Pemain: "Ada apa, Bu?" #Player
@@ -17,18 +17,18 @@ Buruh: "Mas, maaf... bayarnya bisa minggu depan, tidak?" #NPC
 Pemain: "Tapi, bukannya gajian baru beberapa hari lalu, ya, Bu?" #Player
 Buruh: "Iya, memang seharusnya begitu. Tapi, gatau kenapa, gaji saya masih ditahan terus dan tidak cair-cair." #NPC
 
-+ [Balas: "Lho, kok ditahan!?"]
++ ["Lho, kok ditahan!?"]
     Pemain: "Lho, kok malah ditahan!?" #Player
     Buruh: "Gimana, ya, Nak. Kerja jadi buruh, gaji yang berkecukupan saja tidak cair." #NPC
-    Buruh: " Apalagi sebagai ibu yang perlu ninggal anak di kampung, rasanya tidak ada keadilan sama sekali di sini." #NPC
+    Buruh: " Apalagi sebagai ibu yang perlu ninggal anak di kampung, rasanya tidak adil." #NPC
     -> pilihan_simpati_atau_sabar
     
 // Pilihan untuk membahas APD atau Jam Kerja
 === pilihan_simpati_atau_sabar ===
-+ [Balas: "Astaga... ,ibu sudah rela-rela.."]
++ ["Astaga... ,ibu sudah rela-rela.."]
     -> simpati_pemain
 
-+ [Balas: "Ohh, yang sabar aja"]
++ ["Ohh, yang sabar aja"]
     -> sabar_pemain
 
 === simpati_pemain ===
